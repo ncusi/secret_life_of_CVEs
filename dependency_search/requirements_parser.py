@@ -10,10 +10,11 @@ def main():
     filename = sys.argv[1]
     with open(filename) as f:
         lines = f.readlines()
-        extract_dependencies(lines)
+        result = extract_dependencies(lines)
+        print(result)
 
 
-def extract_dependencies(lines: list[str]) -> list[(str, str)]:
+def extract_dependencies(lines):
     """
     Takes requirements.txt contents as list of lines
     Returns list of libraries with versions
