@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName) requirements.txt
+"""Usage: %(scriptName) requirements.txt <parquet_result_file>
 """
 import sys
 
+import pandas as pd
+
 
 def main():
-    filename = sys.argv[1]
-    with open(filename) as f:
+    requirements_filename = sys.argv[1]
+    dataframe_filename = sys.argv[2]
+    with open(requirements_filename) as f:
         lines = f.readlines()
         result = extract_dependencies(lines)
-        print(result)
+        data = pd.DataFrame(result, columns=['library', 'version'])
+        data.to_parquet(dataframe_filename)
 
 
 def extract_dependencies(lines):

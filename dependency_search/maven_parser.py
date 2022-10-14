@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName) pom.xml
+"""Usage: %(scriptName) pom.xml <parquet_result_file>
 """
 import sys
-
 import xml.etree.ElementTree as ET
+
+import pandas as pd
 
 
 def main():
-    filename = sys.argv[1]
-    with open(filename) as f:
+    pom_filename = sys.argv[1]
+    dataframe_filename = sys.argv[2]
+    with open(pom_filename) as f:
         content = f.read()
         result = extract_dependencies(content)
-        print(result)
+        data = pd.DataFrame(result, columns=['library', 'version'])
+        data.to_parquet(dataframe_filename)
 
 
 def extract_dependency(dependency):
