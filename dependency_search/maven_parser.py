@@ -14,7 +14,7 @@ def main():
     dataframe_filename = sys.argv[2]
     with open(pom_filename) as f:
         content = f.read()
-        result = extract_dependencies(content)
+        result = extract_dependencies_with_external_version(content)
         data = pd.DataFrame(result, columns=['library', 'version'])
         data.to_parquet(dataframe_filename)
 
@@ -35,6 +35,26 @@ def extract_dependency(dependency):
     return library_name, library_version
 
 
+def extract_properties(content):
+    """
+    Takes pom.xml contents
+    Usually this is xml structure project->properties->property
+    Property might be a version of library
+    Returns dictionary property name -> value
+    """
+    xml_root = ET.fromstring(content)
+    properties = {}
+    for child in xml_root:
+        if 'properties' in child.tag:
+            xml_properties = child
+            for xml_property in xml_properties:
+                xml_property_with_namespace = xml_property.tag
+                namespace_end_index = xml_property_with_namespace.find('}')
+                variable_name = xml_property_with_namespace[namespace_end_index + 1:]
+                properties[variable_name] = xml_property.text
+    return properties
+
+
 def extract_dependencies(content):
     """
     Takes pom.xml contents
@@ -50,7 +70,24 @@ def extract_dependencies(content):
             for xml_dependency in xml_dependencies:
                 library_name, library_version = extract_dependency(xml_dependency)
                 dependencies.append((library_name, library_version))
+
     return dependencies
+
+
+def extract_dependencies_with_external_version(content):
+    properties = extract_properties(content)
+    dependencies = extract_dependencies(content)
+    adjusted_dependencies = []
+    for dependency in dependencies:
+        library_name, library_version = dependency
+        if "${" == library_version[0:2] and "}" == library_version[-1:]:
+            lookup_variable_name = library_version[2:-1]
+            if lookup_variable_name in properties:
+                adjusted_library_version = properties[lookup_variable_name]
+                adjusted_dependencies.append((library_name, adjusted_library_version))
+        else:
+            adjusted_dependencies.append(dependency)
+    return adjusted_dependencies
 
 
 if __name__ == '__main__':
