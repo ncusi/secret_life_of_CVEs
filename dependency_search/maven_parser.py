@@ -14,8 +14,9 @@ def main():
     dataframe_filename = sys.argv[2]
     with open(pom_filename) as f:
         content = f.read()
-        result = extract_dependencies_with_external_version(content)
-        data = pd.DataFrame(result, columns=['library', 'version'])
+        dependencies = extract_dependencies_with_external_version(content)
+        dependencies_with_url = prepare_artifact_url(dependencies)
+        data = pd.DataFrame(dependencies_with_url, columns=['group_id', 'artifact_id', 'version', 'url'])
         data.to_parquet(dataframe_filename)
 
 
@@ -30,9 +31,7 @@ def extract_dependency(dependency):
             artifact_id = element.text
         if 'version' in element.tag:
             version = element.text
-    library_name = group_id + ':' + artifact_id
-    library_version = version
-    return library_name, library_version
+    return group_id, artifact_id, version
 
 
 def extract_properties(content):
@@ -68,26 +67,45 @@ def extract_dependencies(content):
         if 'dependencies' in child.tag:
             xml_dependencies = child
             for xml_dependency in xml_dependencies:
-                library_name, library_version = extract_dependency(xml_dependency)
-                dependencies.append((library_name, library_version))
+                group_id, artifact_id, library_version = extract_dependency(xml_dependency)
+                dependencies.append((group_id, artifact_id, library_version))
 
     return dependencies
 
 
 def extract_dependencies_with_external_version(content):
+    """
+    Takes pom.xml content, extracts used dependencies, resolving versions from present variables (properties)
+    :param content: maven pom.xml
+    :return: extracted dependencies
+    """
     properties = extract_properties(content)
     dependencies = extract_dependencies(content)
     adjusted_dependencies = []
     for dependency in dependencies:
-        library_name, library_version = dependency
+        group_id, artifact_id, library_version = dependency
         if "${" == library_version[0:2] and "}" == library_version[-1:]:
             lookup_variable_name = library_version[2:-1]
             if lookup_variable_name in properties:
                 adjusted_library_version = properties[lookup_variable_name]
-                adjusted_dependencies.append((library_name, adjusted_library_version))
+                adjusted_dependencies.append((group_id, artifact_id, adjusted_library_version))
         else:
             adjusted_dependencies.append(dependency)
     return adjusted_dependencies
+
+
+def prepare_artifact_url(dependencies):
+    """
+    Takes maven dependencies, adds url to check vulnerability via mvnrepository site
+    :param dependencies: list of (group_id, artifact_id, version)
+    :return: list of (group_id, artifact_id, version, artifact_url)
+    """
+    dependencies_with_vulnerability_url = []
+    for dependency in dependencies:
+        group_id, artifact_id, version = dependency
+        url = f"https://mvnrepository.com/artifact/{group_id}/{artifact_id}/{version}"
+        dependencies_with_vulnerability_url.append((group_id, artifact_id, version, url))
+    return dependencies_with_vulnerability_url
 
 
 if __name__ == '__main__':
