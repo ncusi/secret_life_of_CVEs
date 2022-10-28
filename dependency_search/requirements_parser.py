@@ -3,6 +3,7 @@
 
 """Usage: %(scriptName) requirements.txt <parquet_result_file>
 """
+import requirements
 import sys
 
 import pandas as pd
@@ -12,7 +13,7 @@ def main():
     requirements_filename = sys.argv[1]
     dataframe_filename = sys.argv[2]
     with open(requirements_filename) as f:
-        lines = f.readlines()
+        lines = f.read()
         result = extract_dependencies(lines)
         data = pd.DataFrame(result, columns=['library', 'version'])
         data.to_parquet(dataframe_filename)
@@ -24,12 +25,8 @@ def extract_dependencies(lines):
     Returns list of libraries with versions
     """
     dependencies = []
-    for line in lines:
-        if line.strip() != '':
-            split_result = line.strip().split("==")
-            if len(split_result) == 2:
-                library, version = split_result
-                dependencies.append((library, version))
+    for req in requirements.parse(lines):
+        dependencies.append((req.name, req.specs))
     return dependencies
 
 
