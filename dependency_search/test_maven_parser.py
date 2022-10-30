@@ -1,7 +1,6 @@
 from unittest import TestCase
 
-from maven_parser import extract_dependencies, extract_dependencies_with_external_version, extract_properties, \
-    prepare_artifact_url
+from maven_parser import extract_dependencies, extract_dependencies_with_external_version, extract_properties
 
 
 class Test(TestCase):
@@ -122,11 +121,3 @@ class Test(TestCase):
         self.assertTrue(result[0][0] == 'org.openjdk.jmh')
         self.assertTrue(result[0][1] == 'jmh-core')
         self.assertTrue(result[0][2] == '1.17.5')
-
-    def test_prepare_artifact_url(self):
-        dependencies = [('org.openjdk.jmh', 'jmh-core', '1.17.5')]
-        result = prepare_artifact_url(dependencies)
-        self.assertTrue(result[0][0] == 'org.openjdk.jmh')
-        self.assertTrue(result[0][1] == 'jmh-core')
-        self.assertTrue(result[0][2] == '1.17.5')
-        self.assertTrue(result[0][3] == 'https://mvnrepository.com/artifact/org.openjdk.jmh/jmh-core/1.17.5')

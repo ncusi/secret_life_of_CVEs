@@ -15,8 +15,7 @@ def main():
     with open(pom_filename) as f:
         content = f.read()
         dependencies = extract_dependencies_with_external_version(content)
-        dependencies_with_url = prepare_artifact_url(dependencies)
-        data = pd.DataFrame(dependencies_with_url, columns=['group_id', 'artifact_id', 'version', 'url'])
+        data = pd.DataFrame(dependencies, columns=['group_id', 'artifact_id', 'version'])
         data.to_parquet(dataframe_filename)
 
 
@@ -92,20 +91,6 @@ def extract_dependencies_with_external_version(content):
         else:
             adjusted_dependencies.append(dependency)
     return adjusted_dependencies
-
-
-def prepare_artifact_url(dependencies):
-    """
-    Takes maven dependencies, adds url to check vulnerability via mvnrepository site
-    :param dependencies: list of (group_id, artifact_id, version)
-    :return: list of (group_id, artifact_id, version, artifact_url)
-    """
-    dependencies_with_vulnerability_url = []
-    for dependency in dependencies:
-        group_id, artifact_id, version = dependency
-        url = f"https://mvnrepository.com/artifact/{group_id}/{artifact_id}/{version}"
-        dependencies_with_vulnerability_url.append((group_id, artifact_id, version, url))
-    return dependencies_with_vulnerability_url
 
 
 if __name__ == '__main__':
