@@ -21,7 +21,7 @@ def main():
 
 def extract_dependencies(lines):
     """
-    Takes requirements.txt contents as list of lines
+    Takes requirements.txt contents as string
     Returns list of libraries with versions
     """
     dependencies = []
