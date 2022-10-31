@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName) requirements.txt <parquet_result_file>
+"""Usage: %(scriptName) <go_mod_file> <parquet_result_file>
 
 Specification https://go.dev/ref/mod#go-mod-file
 """
@@ -21,6 +21,12 @@ def main():
 
 
 def find_end_index(lines, start_index):
+    """
+    Finds end index of closing ")" of requirements section
+    :param lines: all lines in file
+    :param start_index: start index of requirements section
+    :return: end index of requirements section
+    """
     end = start_index
     for line in lines[start_index:]:
         end += 1
