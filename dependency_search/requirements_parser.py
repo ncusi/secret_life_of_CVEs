@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """Usage: %(scriptName) requirements.txt <parquet_result_file>
+
+Specification https://pip.pypa.io/en/stable/reference/requirements-file-format/#requirements-file-format
 """
 import requirements
 import sys

@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from requirements_parser import extract_dependencies
 
 
@@ -11,11 +12,11 @@ class Test(TestCase):
             Cython==0.29.12
         """
         result = extract_dependencies(lines)
-        self.assertTrue(result[0][0] == 'bitmap')
-        self.assertTrue(result[0][1] == [('==', '0.0.6')])
-        self.assertTrue(result[1][0] == 'cffi')
-        self.assertTrue(result[1][1] == [('==', '1.12.3')])
-        self.assertTrue(result[2][0] == 'cycler')
-        self.assertTrue(result[2][1] == [('==', '0.10.0')])
-        self.assertTrue(result[3][0] == 'Cython')
-        self.assertTrue(result[3][1] == [('==', '0.29.12')])
+        self.assertEquals(result[0][0], 'bitmap')
+        self.assertEquals(result[0][1], [('==', '0.0.6')])
+        self.assertEquals(result[1][0], 'cffi')
+        self.assertEquals(result[1][1], [('==', '1.12.3')])
+        self.assertEquals(result[2][0], 'cycler')
+        self.assertEquals(result[2][1], [('==', '0.10.0')])
+        self.assertEquals(result[3][0], 'Cython')
+        self.assertEquals(result[3][1], [('==', '0.29.12')])
