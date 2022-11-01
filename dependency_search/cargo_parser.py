@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 
 """Usage: %(scriptName) Cargo.toml <parquet_result_file>
+
+Specification https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html
+https://toml.io/en/
 """
-import tomli
 import sys
 
 import pandas as pd
+import tomli
 
 
 def main():

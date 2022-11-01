@@ -33,9 +33,9 @@ class Test(TestCase):
     </dependencies>
 </project>"""
         result = extract_dependencies(xml_content)
-        self.assertTrue(result[0][0] == 'junit')
-        self.assertTrue(result[0][0] == 'junit')
-        self.assertTrue(result[0][2] == '4.11')
+        self.assertEqual(result[0][0], 'junit')
+        self.assertEqual(result[0][0], 'junit')
+        self.assertEqual(result[0][2], '4.11')
 
     def test_extract_dependencies_on_version_from_properties(self):
         xml_content = """<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -62,9 +62,9 @@ class Test(TestCase):
 
 </project>"""
         result = extract_dependencies(xml_content)
-        self.assertTrue(result[0][0] == 'org.openjdk.jmh')
-        self.assertTrue(result[0][1] == 'jmh-core')
-        self.assertTrue(result[0][2] == '${jmh.version}')
+        self.assertEqual(result[0][0], 'org.openjdk.jmh')
+        self.assertEqual(result[0][1], 'jmh-core')
+        self.assertEqual(result[0][2], '${jmh.version}')
 
     def test_extract_properties(self):
         xml_content = """<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -91,7 +91,7 @@ class Test(TestCase):
 
 </project>"""
         result = extract_properties(xml_content)
-        self.assertTrue(result['jmh.version'] == '1.17.5')
+        self.assertEqual(result['jmh.version'], '1.17.5')
 
     def test_extract_dependencies_with_external_version(self):
         xml_content = """<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -118,6 +118,6 @@ class Test(TestCase):
 
 </project>"""
         result = extract_dependencies_with_external_version(xml_content)
-        self.assertTrue(result[0][0] == 'org.openjdk.jmh')
-        self.assertTrue(result[0][1] == 'jmh-core')
-        self.assertTrue(result[0][2] == '1.17.5')
+        self.assertEqual(result[0][0], 'org.openjdk.jmh')
+        self.assertEqual(result[0][1], 'jmh-core')
+        self.assertEqual(result[0][2], '1.17.5')

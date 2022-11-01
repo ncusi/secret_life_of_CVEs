@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from npm_parser import extract_dependencies
 
 
@@ -38,8 +39,7 @@ class Test(TestCase):
   "license": "MIT"
 }"""
         result = extract_dependencies(package_json_content)
-        self.assertTrue(result[0][0] == 'async')
-        self.assertTrue(result[0][1] == '^0.2.10')
-        self.assertTrue(result[1][0] == 'npm2es')
-        self.assertTrue(result[1][1] == '~0.4.2')
-
+        self.assertEqual(result[0][0], 'async')
+        self.assertEqual(result[0][1], '^0.2.10')
+        self.assertEqual(result[1][0], 'npm2es')
+        self.assertEqual(result[1][1], '~0.4.2')

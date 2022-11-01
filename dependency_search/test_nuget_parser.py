@@ -1,5 +1,7 @@
 from unittest import TestCase
+
 from nuget_parser import extract_dependencies
+
 
 class Test(TestCase):
     def test_extract_dependencies(self):
@@ -27,13 +29,11 @@ class Test(TestCase):
   </metadata>
 </package>"""
         result = extract_dependencies(xml_content)
-        self.assertTrue(result[0][0] == 'Newtonsoft.Json')
-        self.assertTrue(result[0][1] == '11.0.2')
-        self.assertTrue(result[1][0] == 'RestSharp')
-        self.assertTrue(result[1][1] == '106.3.1')
-        self.assertTrue(result[2][0] == 'Selenium.Support')
-        self.assertTrue(result[2][1] == '3.14.0')
-        self.assertTrue(result[3][0] == 'Selenium.WebDriver')
-        self.assertTrue(result[3][1] == '3.14.0')
-
-
+        self.assertEqual(result[0][0], 'Newtonsoft.Json')
+        self.assertEqual(result[0][1], '11.0.2')
+        self.assertEqual(result[1][0], 'RestSharp')
+        self.assertEqual(result[1][1], '106.3.1')
+        self.assertEqual(result[2][0], 'Selenium.Support')
+        self.assertEqual(result[2][1], '3.14.0')
+        self.assertEqual(result[3][0], 'Selenium.WebDriver')
+        self.assertEqual(result[3][1], '3.14.0')
