@@ -41,7 +41,6 @@ def find_cve(df):
 
 def add_dependency_files(df):
     files_df = pd.DataFrame.from_records(df['commit'].apply(find_dependency_files))
-    files_df.set_index('commit')
     result_df = pd.concat([df, files_df], axis=1)
     return result_df
 
@@ -72,7 +71,7 @@ def find_dependency_files(commit_sha):
         if b'nuspec.xml' in changed_file_name:
             modifies_nuget_nuspec_xml = True
 
-    result = {'commit': commit_sha,
+    result = {
               'requirements': modifies_requirements_txt,
               'cargo': modifies_cargo_toml,
               'go_mod': modifies_go_mod,

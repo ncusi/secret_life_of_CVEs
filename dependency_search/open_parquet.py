@@ -12,7 +12,8 @@ def main():
     filename = sys.argv[1]
     data = pd.read_parquet(filename)
     print(data.head())
-
+    print(data.shape)
+    print(data[data['requirements']==True].head())
 
 if __name__ == '__main__':
     main()
