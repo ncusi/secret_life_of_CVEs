@@ -90,7 +90,8 @@ def find_dependency_files(commit_sha):
 def find_file_name_extensions(changed_files):
     extensions = {}
     for changed_file in changed_files:
-        file, extension = splitext(changed_file)
+        file, raw_extension = splitext(changed_file)
+        extension = raw_extension.decode()
         if extension in extensions:
             extensions[extension] += 1
         else:
