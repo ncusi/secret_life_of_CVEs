@@ -14,6 +14,7 @@ def main():
     print(data.head())
     print(data.shape)
     print(data[data['requirements']==True].head())
+    print(data[data['cve']=='CVE-2014-0472'])
 
 if __name__ == '__main__':
     main()

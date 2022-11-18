@@ -6,9 +6,9 @@
 Creates pandas dataframe saved as parquet file with commits connected to cve from results of with_CVS_in_commit_message.sh
 """
 import sys
+from os.path import splitext
 
 import pandas as pd
-
 from oscar import Commit
 
 
@@ -72,14 +72,25 @@ def find_dependency_files(commit_sha):
             modifies_nuget_nuspec_xml = True
 
     result = {
-              'requirements': modifies_requirements_txt,
-              'cargo': modifies_cargo_toml,
-              'go_mod': modifies_go_mod,
-              'ivy': modifies_ivy_xml,
-              'maven': modifies_maven_pom_xml,
-              'npm': modifies_npm_package_json,
-              'nuget': modifies_nuget_nuspec_xml}
+        'requirements': modifies_requirements_txt,
+        'cargo': modifies_cargo_toml,
+        'go_mod': modifies_go_mod,
+        'ivy': modifies_ivy_xml,
+        'maven': modifies_maven_pom_xml,
+        'npm': modifies_npm_package_json,
+        'nuget': modifies_nuget_nuspec_xml}
     return result
+
+
+def find_file_name_extensions(changed_files):
+    extensions = {}
+    for changed_file in changed_files:
+        file, extension = splitext(changed_file)
+        if extension in extensions:
+            extensions[extension] += 1
+        else:
+            extensions[extension] = 1
+    return extensions
 
 
 def find_project_names(df):
