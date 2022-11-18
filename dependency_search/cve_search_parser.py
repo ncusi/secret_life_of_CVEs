@@ -21,7 +21,7 @@ def main():
     df.set_index('commit')
     extracted_df = find_cve(df)
     extracted_df = extracted_df[['commit', 'cve']]
-    # extracted_df = find_project_names(extracted_df.head())
+    # extracted_df = add_dependency_files(extracted_df.head())
     extracted_df = add_dependency_files(extracted_df)
     # print(extracted_df.columns)
     # print(extracted_df.head())
@@ -55,7 +55,9 @@ def find_dependency_files(commit_sha):
     modifies_npm_package_json = False
     modifies_nuget_nuspec_xml = False
 
+    total_number_of_files = 0
     for changed_file_name in commit.changed_file_names:
+        total_number_of_files += 1
         if b'requirements.txt' in changed_file_name:
             modifies_requirements_txt = True
         if b'Cargo.toml' in changed_file_name:
@@ -71,14 +73,17 @@ def find_dependency_files(commit_sha):
         if b'nuspec.xml' in changed_file_name:
             modifies_nuget_nuspec_xml = True
 
+    extensions = find_file_name_extensions(commit.changed_file_names)
     result = {
-        'requirements': modifies_requirements_txt,
-        'cargo': modifies_cargo_toml,
-        'go_mod': modifies_go_mod,
-        'ivy': modifies_ivy_xml,
-        'maven': modifies_maven_pom_xml,
-        'npm': modifies_npm_package_json,
-        'nuget': modifies_nuget_nuspec_xml}
+        'total_number_of_files': total_number_of_files,
+        'dep_requirements': modifies_requirements_txt,
+        'dep_cargo': modifies_cargo_toml,
+        'dep_go_mod': modifies_go_mod,
+        'dep_ivy': modifies_ivy_xml,
+        'dep_maven': modifies_maven_pom_xml,
+        'dep_npm': modifies_npm_package_json,
+        'dep_nuget': modifies_nuget_nuspec_xml}
+    result.update(extensions)
     return result
 
 
