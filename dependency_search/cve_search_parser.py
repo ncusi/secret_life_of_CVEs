@@ -5,6 +5,7 @@
 
 Creates pandas dataframe saved as parquet file with commits connected to cve from results of with_CVS_in_commit_message.sh
 """
+import re
 import sys
 from os.path import splitext
 
@@ -18,9 +19,9 @@ def main():
     column_names = ['commit', 'tree', 'parent', 'author', 'commiter', 'author_time', 'commiter_time', 'author_timezone',
                     'commiter_timezone', 'commit_message']
     df = pd.read_csv(cve_search_filename, sep=";", encoding='latin-1', names=column_names)
-    df.set_index('commit')
-    extracted_df = find_cve(df)
-    extracted_df = extracted_df[['commit', 'cve']]
+    # print(df.columns)
+    # print(df.head()['commit_message'])
+    extracted_df = add_cve(df)
     # extracted_df = add_dependency_files(extracted_df.head())
     extracted_df = add_dependency_files(extracted_df)
     # print(extracted_df.columns)
@@ -28,15 +29,26 @@ def main():
     extracted_df.to_parquet(dataframe_filename)
 
 
-def find_cve(df):
+def add_cve(df):
     """
-    Extracts cve number from commit message
-    :param df: dataframe with commit_message column
-    :return: dataframe with extracted cve from commit message
+    Prepares new dataset with extracted cve
+    :param df: dataframe with 'commit' and 'commit_message' columns
+    :return: new dataframe with 'commit' and 'cves' column
+    """
+    cve_df = pd.DataFrame.from_records(df.apply(lambda row: extract_cve(row['commit'], row['commit_message']), axis=1))
+    return cve_df
+
+
+def extract_cve(commit_sha, commit_message):
+    """
+    Extracts cve numbers from commit message
+    :param commit_sha: unique id of commit
+    :param commit_message: message containing cve
+    :return: record with list of extracted cves
     """
     pattern = r'(CVE-\d{4}-\d{4,7})'
-    df['cve'] = df['commit_message'].str.extract(pattern)
-    return df
+    cve_entries = re.findall(pattern, commit_message)
+    return {'commit': commit_sha, 'cves': cve_entries}
 
 
 def add_dependency_files(df):

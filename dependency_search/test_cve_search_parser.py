@@ -2,16 +2,25 @@ from unittest import TestCase
 
 import pandas as pd
 
-from cve_search_parser import find_cve
-from cve_search_parser import find_file_name_extensions
+from cve_search_parser import add_cve, extract_cve, find_file_name_extensions
 
 
 class Test(TestCase):
-    def test_find_cve(self):
-        df = pd.DataFrame(['CVE-2014-2972', 'something CVE-2015-3972 something lese'], columns=['commit_message'])
-        df = find_cve(df)
-        self.assertEqual(df['cve'][0], 'CVE-2014-2972')
-        self.assertEqual(df['cve'][1], 'CVE-2015-3972')
+    def test_add_cve(self):
+        df = pd.DataFrame(
+            [['80cfab8fdefa20cef32e5e591ebf9bc47d1d7bc5', 'CVE-2014-2972'],
+             ['8011cd56e39a433b1837465259a9bd24a38727fb', 'something CVE-2015-3972 something lese']],
+            columns=['commit', 'commit_message'])
+        result_df = add_cve(df)
+        self.assertEqual(result_df['cves'][0], ['CVE-2014-2972'])
+        self.assertEqual(result_df['cves'][1], ['CVE-2015-3972'])
+
+    def test_extract_cve(self):
+        commit = '80cfab8fdefa20cef32e5e591ebf9bc47d1d7bc5',
+        commit_message = 'something CVE-2014-2972 and another CVE-2012-4405'
+        result = extract_cve(commit, commit_message)
+        self.assertEqual(result.get('commit'), commit)
+        self.assertEqual(result.get('cves'), ['CVE-2014-2972', 'CVE-2012-4405'])
 
     def test_find_file_name_extensions(self):
         changed_file_names = [b'Dockerfile', b'README.md', b'docker-compose.yml', b'img/exec_evil.png',
