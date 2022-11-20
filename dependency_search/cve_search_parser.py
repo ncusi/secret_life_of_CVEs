@@ -6,6 +6,7 @@
 Creates pandas dataframe saved as parquet file with commits connected to cve from results of with_CVS_in_commit_message.sh
 """
 import re
+import subprocess
 import sys
 from os.path import splitext
 
@@ -19,10 +20,8 @@ def main():
     column_names = ['commit', 'tree', 'parent', 'author', 'commiter', 'author_time', 'commiter_time', 'author_timezone',
                     'commiter_timezone', 'commit_message']
     df = pd.read_csv(cve_search_filename, sep=";", encoding='latin-1', names=column_names)
-    # print(df.columns)
-    # print(df.head()['commit_message'])
     extracted_df = add_cve(df)
-    # extracted_df = add_dependency_files(extracted_df.head())
+    extracted_df = find_project_names(extracted_df)
     extracted_df = add_dependency_files(extracted_df)
     # print(extracted_df.columns)
     # print(extracted_df.head())
@@ -118,13 +117,16 @@ def find_project_names(df):
 
 
 def find_project_name(commit_sha):
-    print(commit_sha)
-    commit = Commit(commit_sha)
-    tmp = []
-    for project_name in commit.project_names:
-        tmp.append(project_name)
-    print(tmp)
-    return tmp[0]
+    # print(commit_sha)
+
+    from subprocess import run, PIPE
+    # args = ["~/lookup/getValues c2P"]
+    args = "echo " + commit_sha + " | ~/lookup/getValues c2P"
+    process = run(args, stdout=PIPE, shell=True)
+    # print(process)
+    output = process.stdout.decode()
+    # print(output)
+    return output.split(';')[1:]
 
 
 if __name__ == '__main__':
