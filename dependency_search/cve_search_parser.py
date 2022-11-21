@@ -6,7 +6,6 @@
 Creates pandas dataframe saved as parquet file with commits connected to cve from results of with_CVS_in_commit_message.sh
 """
 import re
-import subprocess
 import sys
 from os.path import splitext
 
@@ -21,7 +20,7 @@ def main():
                     'commiter_timezone', 'commit_message']
     df = pd.read_csv(cve_search_filename, sep=";", encoding='latin-1', names=column_names)
     extracted_df = add_cve(df)
-    extracted_df = find_project_names(extracted_df)
+    # extracted_df = find_project_names(extracted_df)
     extracted_df = add_dependency_files(extracted_df)
     # print(extracted_df.columns)
     # print(extracted_df.head())
@@ -34,20 +33,23 @@ def add_cve(df):
     :param df: dataframe with 'commit' and 'commit_message' columns
     :return: new dataframe with 'commit' and 'cves' column
     """
-    cve_df = pd.DataFrame.from_records(df.apply(lambda row: extract_cve(row['commit'], row['commit_message']), axis=1))
+    cve_df = pd.DataFrame.from_records(df.apply(lambda row: extract_cve(row['commit'], row['commit_message'],
+                                                                        int(row['commiter_time'])), axis=1))
     return cve_df
 
 
-def extract_cve(commit_sha, commit_message):
+def extract_cve(commit_sha, commit_message, commit_time):
     """
     Extracts cve numbers from commit message
     :param commit_sha: unique id of commit
     :param commit_message: message containing cve
-    :return: record with list of extracted cves
+    :param commit_time: time of commit
+    :return: record with list of extracted cves and commit time
     """
     pattern = r'(CVE-\d{4}-\d{4,7})'
     cve_entries = re.findall(pattern, commit_message)
-    return {'commit': commit_sha, 'cves': cve_entries}
+    from datetime import datetime
+    return {'commit': commit_sha, 'commit_cves': cve_entries, 'commit_time': str(datetime.fromtimestamp(commit_time))}
 
 
 def add_dependency_files(df):
@@ -102,7 +104,7 @@ def find_file_name_extensions(changed_files):
     extensions = {}
     for changed_file in changed_files:
         file, raw_extension = splitext(changed_file)
-        extension = raw_extension.decode()
+        extension = 'ext_' + raw_extension.decode()
         if extension in extensions:
             extensions[extension] += 1
         else:
