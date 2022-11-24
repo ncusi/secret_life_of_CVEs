@@ -60,6 +60,24 @@ def add_dependency_files(df):
 
 def find_dependency_files(commit_sha):
     commit = Commit(commit_sha)
+
+    total_number_of_files = 0
+    for changed_file_name in commit.changed_file_names:
+        total_number_of_files += 1
+
+    dependencies = find_file_name_dependencies(commit.changed_file_names)
+    documentation = find_file_name_documentation(commit.changed_file_names)
+    extensions = find_file_name_extensions(commit.changed_file_names)
+    result = {
+        'total_number_of_files': total_number_of_files
+    }
+    result.update(dependencies)
+    result.update(documentation)
+    result.update(extensions)
+    return result
+
+
+def find_file_name_dependencies(changed_files):
     modifies_requirements_txt = False
     modifies_cargo_toml = False
     modifies_go_mod = False
@@ -68,9 +86,7 @@ def find_dependency_files(commit_sha):
     modifies_npm_package_json = False
     modifies_nuget_nuspec_xml = False
 
-    total_number_of_files = 0
-    for changed_file_name in commit.changed_file_names:
-        total_number_of_files += 1
+    for changed_file_name in changed_files:
         if b'requirements.txt' in changed_file_name:
             modifies_requirements_txt = True
         if b'Cargo.toml' in changed_file_name:
@@ -86,18 +102,27 @@ def find_dependency_files(commit_sha):
         if b'nuspec.xml' in changed_file_name:
             modifies_nuget_nuspec_xml = True
 
-    extensions = find_file_name_extensions(commit.changed_file_names)
-    result = {
-        'total_number_of_files': total_number_of_files,
+    dependencies = {
         'dep_requirements': modifies_requirements_txt,
         'dep_cargo': modifies_cargo_toml,
         'dep_go_mod': modifies_go_mod,
         'dep_ivy': modifies_ivy_xml,
         'dep_maven': modifies_maven_pom_xml,
         'dep_npm': modifies_npm_package_json,
-        'dep_nuget': modifies_nuget_nuspec_xml}
-    result.update(extensions)
-    return result
+        'dep_nuget': modifies_nuget_nuspec_xml
+    }
+    return dependencies
+
+
+def find_file_name_documentation(changed_file_names):
+    readme_regexp = re.compile(r'README.md')
+    documentation_readme_count = 0
+    for changed_file_name in changed_file_names:
+        if readme_regexp.match(changed_file_name.decode()):
+            documentation_readme_count += 1
+
+    documentation = {'doc_readme_count': documentation_readme_count}
+    return documentation
 
 
 def find_file_name_extensions(changed_files):
