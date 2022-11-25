@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName) <search.CVE_in_commit_message.lstCmt_9.out> <parquet_result_file>
+"""Usage: %(scriptName) <search.CVE_in_commit_message.lstCmt_9.out> <projects_with_CVE_fix.txt> <parquet_result_file>
 
 Creates pandas dataframe saved as parquet file with commits connected to cve from results of with_CVS_in_commit_message.sh
 """
@@ -14,16 +14,25 @@ from oscar import Commit
 
 
 def main():
-    cve_search_filename = sys.argv[1]
-    dataframe_filename = sys.argv[2]
+    cve_search_df_filename = sys.argv[1]
+    project_name_df_filename = sys.argv[2]
+    dataframe_filename = sys.argv[3]
     column_names = ['commit', 'tree', 'parent', 'author', 'commiter', 'author_time', 'commiter_time', 'author_timezone',
                     'commiter_timezone', 'commit_message']
-    df = pd.read_csv(cve_search_filename, sep=";", encoding='latin-1', names=column_names)
+    df = pd.read_csv(cve_search_df_filename, sep=";", encoding='latin-1', names=column_names)
+    project_name_df = pd.read_fwf(project_name_df_filename, header=None)
+    split_result = project_name_df[0].str.split(';', n=1, expand=True)
+    project_name_df['commit'] = split_result[0]
+    project_name_df['project_names'] = split_result[1]
+
+    # df = df.head()
+
     extracted_df = add_cve(df)
-    # extracted_df = find_project_names(extracted_df)
+    extracted_df = pd.merge(left=extracted_df, right=project_name_df, how='left', left_on=['commit'],
+                            right_on=['commit']).drop([0], axis=1)
     extracted_df = add_dependency_files(extracted_df)
     # print(extracted_df.columns)
-    # print(extracted_df.head())
+    # print(extracted_df)
     extracted_df.to_parquet(dataframe_filename)
 
 
@@ -135,25 +144,6 @@ def find_file_name_extensions(changed_files):
         else:
             extensions[extension] = 1
     return extensions
-
-
-def find_project_names(df):
-    print(df)
-    df['project_name'] = df['commit'].apply(find_project_name)
-    return df
-
-
-def find_project_name(commit_sha):
-    # print(commit_sha)
-
-    from subprocess import run, PIPE
-    # args = ["~/lookup/getValues c2P"]
-    args = "echo " + commit_sha + " | ~/lookup/getValues c2P"
-    process = run(args, stdout=PIPE, shell=True)
-    # print(process)
-    output = process.stdout.decode()
-    # print(output)
-    return output.split(';')[1:]
 
 
 if __name__ == '__main__':
