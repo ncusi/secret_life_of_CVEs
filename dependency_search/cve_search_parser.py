@@ -4,6 +4,8 @@
 """Usage: %(scriptName) <search.CVE_in_commit_message.lstCmt_9.out> <projects_with_CVE_fix.txt> <parquet_result_file>
 
 Creates pandas dataframe saved as parquet file with commits connected to cve from results of with_CVS_in_commit_message.sh
+Requires result of following script to attach project names:
+$ cat search.CVE_in_commit_message_ignore_case.lstCmt_9.out |cut -d';' -f1 | ~/lookup/getValues c2P 1 > projects_with_CVE_fix.txt
 """
 import re
 import sys
@@ -126,7 +128,7 @@ def find_file_name_dependencies(changed_files):
 
 
 def find_file_name_documentation(changed_file_names):
-    readme_regexp = re.compile(r'README.md')
+    readme_regexp = re.compile(r'README.md', flags=re.IGNORECASE)
     documentation_readme_count = 0
     for changed_file_name in changed_file_names:
         if readme_regexp.match(changed_file_name.decode()):
