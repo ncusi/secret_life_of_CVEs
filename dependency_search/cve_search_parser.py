@@ -56,7 +56,9 @@ def extract_cve(commit_sha, commit_message, commit_time):
     :return: record with list of extracted cves and commit time
     """
     pattern = r'(CVE-\d{4}-\d{4,7})'
-    cve_entries = re.findall(pattern, commit_message)
+    tmap = "".maketrans(" _+", "---")
+    adjusted_commit_message = commit_message.translate(tmap).upper()
+    cve_entries = re.findall(pattern, adjusted_commit_message, flags=re.IGNORECASE)
     from datetime import datetime
     return {'commit': commit_sha, 'commit_cves': cve_entries, 'commit_time': str(datetime.fromtimestamp(commit_time))}
 

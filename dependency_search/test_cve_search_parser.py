@@ -18,7 +18,7 @@ class Test(TestCase):
 
     def test_extract_cve(self):
         commit = '80cfab8fdefa20cef32e5e591ebf9bc47d1d7bc5',
-        commit_message = 'something CVE-2014-2972 and another CVE-2012-4405'
+        commit_message = 'something CVE-2014-2972 and another cve 2012 4405'
         commit_time = 1407180895
         result = extract_cve(commit, commit_message, commit_time)
         self.assertEqual(result.get('commit'), commit)
