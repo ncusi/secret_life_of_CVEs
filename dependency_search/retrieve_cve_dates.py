@@ -3,7 +3,7 @@
 
 """Usage: %(scriptName) <parquet_dataframe_filename> <parquet_cve_published_date_filename>
 
-
+Retrieves cve published date via rest api from instance of CVE-Search
 """
 import json
 import sys
@@ -20,13 +20,16 @@ def main():
     time_df = df[['commit', 'commit_cves', 'commit_time', 'project_names']]
     exploded_time_df = time_df.explode('commit_cves')
     unique_cves = exploded_time_df['commit_cves'].dropna().unique()
-    result = download_cve_published_date(unique_cves)
+    result, errors = download_cve_published_date(unique_cves)
     cve_published_date_df = pd.DataFrame(result, columns=['cve', 'published_date'])
     cve_published_date_df.to_parquet(cve_published_date_filename)
+    cve_published_date_errors_df = pd.DataFrame(result, columns=['cve', 'error'])
+    cve_published_date_errors_df.to_parquet(cve_published_date_filename + '_errors')
 
 
 def download_cve_published_date(unique_cves):
     result = []
+    errors = []
     for cve in tqdm(unique_cves):
         try:
             cve_published_date = gather_cve_published_data(cve)
@@ -34,8 +37,9 @@ def download_cve_published_date(unique_cves):
         except Exception as err:
             print(cve)
             print(err)
+            errors.append((cve, err))
             pass
-    return result
+    return result, errors
 
 
 def gather_cve_published_data(cve):
