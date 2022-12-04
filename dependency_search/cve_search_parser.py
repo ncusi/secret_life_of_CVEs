@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName) <search.CVE_in_commit_message.lstCmt_9.out> <projects_with_CVE_fix.txt> <parquet_result_file>
+"""Usage: %(scriptName) <search.CVE_in_commit_message.lstCmt_9.out> <projects_with_CVE_fix.txt> <cve_df_filename>
 
 Creates pandas dataframe saved as parquet file with commits connected to cve from results of with_CVS_in_commit_message.sh
 Requires result of following script to attach project names:
