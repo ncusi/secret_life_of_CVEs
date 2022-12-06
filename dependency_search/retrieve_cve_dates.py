@@ -5,6 +5,7 @@
 
 Retrieves cve published date via rest api from instance of CVE-Search
 Requires results of cve_search_parser.py
+Saves two dataframes, first for retrieved publish dates of cves, second for errors
 """
 import json
 import sys
@@ -29,6 +30,11 @@ def main():
 
 
 def download_cve_published_date(unique_cves):
+    """
+    Downloads each cve details via rest api from instance of CVE-Search
+    :param unique_cves: list of unique cve
+    :return: a pair of lists, first element is list of downloaded cve publish dates, second list of errors
+    """
     result = []
     errors = []
     for cve in tqdm(unique_cves):
@@ -44,6 +50,11 @@ def download_cve_published_date(unique_cves):
 
 
 def gather_cve_published_data(cve):
+    """
+    Retrieves cve details via rest api from instance of CVE-Search
+    :param cve: Unique cve in format CVE-\d{4}-\d{4,7}, for example CVE-2014-2972
+    :return: publish date for selected cve
+    """
     url = 'http://158.75.112.151:5000/api/cve/'
     request_url = url + cve
     with urllib.request.urlopen(request_url) as result:
