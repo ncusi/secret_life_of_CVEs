@@ -18,7 +18,7 @@ def main():
     dataframe_filename = sys.argv[1]
     cve_published_date_filename = sys.argv[2]
     df = pd.read_parquet(dataframe_filename)
-    time_df = df[['commit', 'commit_cves', 'commit_time', 'project_names']]
+    time_df = df[['commit', 'commit_cves', 'commiter_time', 'author_time', 'project_names']]
     exploded_time_df = time_df.explode('commit_cves')
     unique_cves = exploded_time_df['commit_cves'].dropna().unique()
     result, errors = download_cve_published_date(unique_cves)
