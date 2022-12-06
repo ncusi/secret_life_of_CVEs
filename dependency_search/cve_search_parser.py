@@ -45,16 +45,18 @@ def add_cve(df):
     :return: new dataframe with 'commit' and 'cves' column
     """
     cve_df = pd.DataFrame.from_records(df.apply(lambda row: extract_cve(row['commit'], row['commit_message'],
-                                                                        int(row['commiter_time'])), axis=1))
+                                                                        int(row['commiter_time']),
+                                                                        int(row['author_time'])), axis=1))
     return cve_df
 
 
-def extract_cve(commit_sha, commit_message, commit_time):
+def extract_cve(commit_sha, commit_message, commiter_time, author_time):
     """
     Extracts cve numbers from commit message
     :param commit_sha: unique id of commit
     :param commit_message: message containing cve
-    :param commit_time: time of commit
+    :param commiter_time: time of commit from commiter perspective
+    :param author_time: time of commit from author perspective
     :return: record with list of extracted cves and commit time
     """
     pattern = r'(CVE-\d{4}-\d{4,7})'
@@ -62,7 +64,9 @@ def extract_cve(commit_sha, commit_message, commit_time):
     adjusted_commit_message = commit_message.translate(tmap).upper()
     cve_entries = re.findall(pattern, adjusted_commit_message, flags=re.IGNORECASE)
     from datetime import datetime
-    return {'commit': commit_sha, 'commit_cves': cve_entries, 'commit_time': str(datetime.fromtimestamp(commit_time))}
+    return {'commit': commit_sha, 'commit_cves': cve_entries,
+            'commiter_time': str(datetime.fromtimestamp(commiter_time)),
+            'author_time': str(datetime.fromtimestamp(author_time))}
 
 
 def add_dependency_files(df):
