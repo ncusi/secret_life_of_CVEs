@@ -5,7 +5,7 @@
 
 Retrieves cve published date via rest api from instance of CVE-Search
 Requires results of cve_search_parser.py
-Saves two dataframes, first for retrieved publish dates of cves, second for errors
+Saves dataframe with columns 'cve', 'published_date', 'error'
 """
 import json
 import sys
