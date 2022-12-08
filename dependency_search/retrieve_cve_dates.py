@@ -12,6 +12,7 @@ import sys
 import urllib3
 
 import pandas as pd
+from joblib import Parallel, delayed
 from tqdm import tqdm
 
 
@@ -34,16 +35,11 @@ def download_cve_published_date(unique_cves):
     :return: list of results (cve, published date, error)
     """
     http = urllib3.PoolManager()
-    result = []
-    for cve in tqdm(unique_cves):
-        try:
-            cve_published_date = gather_cve_published_data(http, cve)
-            result.append((cve, cve_published_date, None))
-        except Exception as err:
-            print(cve)
-            print(err)
-            result.append((cve, None, err))
-            pass
+
+    result = Parallel(n_jobs=6 * 12, backend="threading")(
+        delayed(gather_cve_published_data)(http, cve) for cve in tqdm(unique_cves)
+    )
+
     return result
 
 
@@ -55,9 +51,15 @@ def gather_cve_published_data(http, cve):
     """
     url = 'http://158.75.112.151:5000/api/cve/'
     request_url = url + cve
-    response = http.request("GET", request_url)
-    published = response.json()['Published']
-    return published
+    published = None
+    error = None
+    try:
+        response = http.request("GET", request_url)
+        data = json.loads(response.data.decode('utf-8'))
+        published = data['Published']
+    except Exception as exception:
+        error = str(exception)
+    return cve, published, error
 
 if __name__ == '__main__':
     main()
