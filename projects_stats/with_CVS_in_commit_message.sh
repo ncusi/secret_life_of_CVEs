@@ -17,4 +17,9 @@ for i in {0..127}; do \
     done |
     grep -e 'CVE[ _+-]\?[0-9]\{4\}[ _+-]\?[0-9]\{4,\}' \
          >~/search.CVE_in_commit_message.lstCmt_9.out
+gzip ~/search.CVE_in_commit_message.lstCmt_9.out
 
+# extract list of commit ids, one per line
+zcat ~/search.CVE_in_commit_message.lstCmt_9.out.gz |
+    cut -d\; -f1 \
+        >search.CVE_in_commit_message.commit_id.out
