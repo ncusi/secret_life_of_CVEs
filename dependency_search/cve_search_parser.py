@@ -85,8 +85,10 @@ def find_dependency_files(commit_sha):
     dependencies = find_file_name_dependencies(commit.changed_file_names)
     documentation = find_file_name_documentation(commit.changed_file_names)
     extensions = find_file_name_extensions(commit.changed_file_names)
+    most_common_extension = find_most_common_extension(extensions)
     result = {
-        'total_number_of_files': total_number_of_files
+        'total_number_of_files': total_number_of_files,
+        'most_common_extension': most_common_extension
     }
     result.update(dependencies)
     result.update(documentation)
@@ -152,6 +154,19 @@ def find_file_name_extensions(changed_files):
         else:
             extensions[extension] = 1
     return extensions
+
+
+def find_most_common_extension(extensions):
+    most_common_extension = ''
+    max_count = 0
+    for extension, count in extensions.items():
+        cleaned_extension = extension[4:] # 'ext_' prefix removal
+        if count == max_count:
+            most_common_extension = most_common_extension + ';' + cleaned_extension
+        if count > max_count:
+            max_count = count
+            most_common_extension = cleaned_extension
+    return most_common_extension
 
 
 if __name__ == '__main__':
