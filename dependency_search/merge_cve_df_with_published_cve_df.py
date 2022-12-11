@@ -3,7 +3,7 @@
 
 """Usage: %(scriptName) <cve_df_filename> <published_cve_df_filename> <commits_with_published_cve_df_filename>
 
-Requires results of cve_search_parser.py and retrieve_cve_dates.py
+Requires result of cve_search_parser.py and retrieve_cve_dates.py
 """
 import sys
 
