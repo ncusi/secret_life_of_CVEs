@@ -1,4 +1,12 @@
 stages:
+  retrieve_cve_dates:
+    cmd: python3 dependency_search/retrieve_cve_dates.py data/cve_df_filename 
+      data/published_cve_df_filename
+    deps:
+    - data/cve_df_filename
+    - dependency_search/retrieve_cve_dates.py
+    outs:
+    - data/published_cve_df_filename
   retrieve_cve_info:
     cmd: python3 dependency_search/retrieve_cve_info.py data/published_cve_df_filename
       data/unique_cve_info-cvss_cwe.parquet
