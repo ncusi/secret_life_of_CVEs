@@ -1,0 +1,16 @@
+schema: '2.0'
+stages:
+  retrieve_cve_info:
+    cmd: python3 dependency_search/retrieve_cve_info.py data/published_cve_df_filename
+      data/unique_cve_info-cvss_cwe.parquet
+    deps:
+    - path: data/published_cve_df_filename
+      md5: cac0d75d900b0904b5f79c7e35a2beb9
+      size: 775181
+    - path: dependency_search/retrieve_cve_info.py
+      md5: 8ed2cb3c4f8ae8b5e660919cc63e7010
+      size: 2532
+    outs:
+    - path: data/unique_cve_info-cvss_cwe.parquet
+      md5: fd53b24d369442f01de84d00d5aef682
+      size: 678673
