@@ -9,9 +9,9 @@ stages:
     - data/published_cve_df_filename
   retrieve_cve_info:
     cmd: python3 dependency_search/retrieve_cve_info.py data/published_cve_df_filename
-      data/unique_cve_info-cvss_cwe.parquet
+      data/unique_cve_info-cvss_cwe_etc.parquet
     deps:
     - data/published_cve_df_filename
     - dependency_search/retrieve_cve_info.py
     outs:
-    - data/unique_cve_info-cvss_cwe.parquet
+    - data/unique_cve_info-cvss_cwe_etc.parquet

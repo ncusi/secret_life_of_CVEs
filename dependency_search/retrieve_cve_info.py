@@ -44,8 +44,9 @@ def main():
 
     result = download_cve_published_date(unique_cve)
 
-    cve_published_date_df = pd.DataFrame(result,
-                                         columns=['cve', 'cvss', 'cwe', 'error']).convert_dtypes()
+    cve_published_date_df = pd.DataFrame\
+        .from_records(result)\
+        .convert_dtypes()
     cve_published_date_df.to_parquet(cve_dataframe_filename)
 
 
@@ -53,7 +54,7 @@ def download_cve_published_date(unique_cve):
     """
     Downloads each cve details via rest api from instance of CVE-Search
     :param unique_cve: list of unique cve
-    :return: list of results (cve, cvss, cve)
+    :return: list of dicts (including 'cvss', 'cwe', 'error' keys)
     """
     http = urllib3.PoolManager()
 
@@ -69,21 +70,36 @@ def gather_cve_published_data(http, cve):
     Retrieves cve details via rest api from instance of CVE-Search
     :param http: urllib-compatible object, with .request("GET", request_url) method
     :param cve: Unique cve in format CVE-\d{4}-\d{4,7}, for example CVE-2014-2972
-    :return: (cve, cvss, cws, error) tuple
+    :return: dict that includes at least 'cvss', 'cwe' and 'error' keys
     """
     url = 'http://158.75.112.151:5000/api/cve/'
     request_url = url + cve
-    cvss = None
-    cwe = None
-    error = None
+    result = {
+        'cvss': None,
+        'cwe': None,
+        'error': None,
+    }
     try:
         response = http.request("GET", request_url)
         data = json.loads(response.data.decode('utf-8'))
-        cvss = data['cvss']
-        cwe  = data['cwe']
+
+        result['cvss'] = data['cvss']
+        result['cwe']  = data['cwe']
+        result['cvss-vector'] = data['cvss-vector']  # example: "AV:L/AC:L/Au:N/C:N/I:N/A:P"
+        if "access" in data:
+            result["access.authentication"] = data["access"]["authentication"]
+            result["access.complexity"] = data["access"]["complexity"]
+            result["access.vector"] = data["access"]["vector"]
+        if "impact" in data:
+            result["impact.availability"] = data["impact"]["availability"]
+            result["impact.confidentiality"] = data["impact"]["confidentiality"]
+            result["impact.integrity"] = data["impact"]["integrity"]
+    except urllib3.exceptions.NewConnectionError as exception:
+        print(f"Connection error for {request_url}: {exception}")
+        sys.exit(1)
     except Exception as exception:
-        error = str(exception)
-    return cve, cvss, cwe, error
+        result['error'] = str(exception)
+    return result
 
 
 if __name__ == '__main__':
