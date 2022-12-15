@@ -21,9 +21,9 @@ stages:
       md5: cac0d75d900b0904b5f79c7e35a2beb9
       size: 775181
     - path: dependency_search/retrieve_cve_info.py
-      md5: ba0facbeba08c342c9b1816dd4310dc2
-      size: 3326
+      md5: 6cf65e0c391842a379da958166b1d905
+      size: 3381
     outs:
     - path: data/unique_cve_info-cvss_cwe_etc.parquet
-      md5: ec6ccc5f5eb9e5cc54ef2349c1b2b544
-      size: 328402
+      md5: 11d3d0ba71838bf742de7d766c736aa1
+      size: 869228
