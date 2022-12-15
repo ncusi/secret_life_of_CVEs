@@ -5,7 +5,7 @@
 
 Retrieves CVE information via REST API from an instance of CVE-Search
 Requires result of cve_search_parser.py, or any other dataframe with 'cve' column
-Saves dataframe with columns 'cve', 'cvss', 'cwe'
+Saves dataframe with columns 'cve', 'cvss', 'cwe', and possibly others
 
 Based on retrieve_cve_dates.py
 """
@@ -54,7 +54,7 @@ def download_cve_published_date(unique_cve):
     """
     Downloads each cve details via rest api from instance of CVE-Search
     :param unique_cve: list of unique cve
-    :return: list of dicts (including 'cvss', 'cwe', 'error' keys)
+    :return: list of dicts (including 'cve', 'cvss', 'cwe', 'error' keys)
     """
     http = urllib3.PoolManager()
 
@@ -70,11 +70,12 @@ def gather_cve_published_data(http, cve):
     Retrieves cve details via rest api from instance of CVE-Search
     :param http: urllib-compatible object, with .request("GET", request_url) method
     :param cve: Unique cve in format CVE-\d{4}-\d{4,7}, for example CVE-2014-2972
-    :return: dict that includes at least 'cvss', 'cwe' and 'error' keys
+    :return: dict that includes at least 'cve', 'cvss', 'cwe' and 'error' keys
     """
     url = 'http://158.75.112.151:5000/api/cve/'
     request_url = url + cve
     result = {
+        'cve': cve,
         'cvss': None,
         'cwe': None,
         'error': None,
