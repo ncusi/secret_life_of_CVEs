@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName)s <cve_df_filename> <cve_df_info_filename>
+"""Usage: %(scriptName)s <published_cve_df_filename> <unique_cve_info-cvss_cwe_etc.parquet>
 
 Retrieves CVE information via REST API from an instance of CVE-Search
 Requires result of cve_search_parser.py, or any other dataframe with 'cve' column
