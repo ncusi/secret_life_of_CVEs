@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName)s <projects_df_filename> <project_info_filename>
+"""Usage: %(scriptName)s <cve_df_filename> <unique_project_info.parquet>
 
 Expects <projects_df_filename> to be a file in the Parquet format, which
 contains DataFrame with either 'project_name' column with project name,
