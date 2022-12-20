@@ -27,3 +27,17 @@ stages:
     - path: data/unique_cve_info-cvss_cwe_etc.parquet
       md5: 11d3d0ba71838bf742de7d766c736aa1
       size: 869228
+  retrieve_project_info:
+    cmd: python3 projects_stats/retrieve_metadata_from_WoC_mongodb.py data/cve_df_filename
+      data/unique_project_info.parquet
+    deps:
+    - path: data/cve_df_filename
+      md5: 2edd1805e47670ff381b6e81f5b03463
+      size: 60583695
+    - path: projects_stats/retrieve_metadata_from_WoC_mongodb.py
+      md5: af3fe986de04dc659cfccf408d74ac17
+      size: 9578
+    outs:
+    - path: data/unique_project_info.parquet
+      md5: ab9166e42442236878e119a9c8fcfe49
+      size: 2664107
