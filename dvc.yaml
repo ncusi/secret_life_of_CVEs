@@ -15,3 +15,11 @@ stages:
     - dependency_search/retrieve_cve_info.py
     outs:
     - data/unique_cve_info-cvss_cwe_etc.parquet
+  retrieve_project_info:
+    cmd: python3 projects_stats/retrieve_metadata_from_WoC_mongodb.py data/cve_df_filename
+      data/unique_project_info.parquet
+    deps:
+    - data/cve_df_filename
+    - projects_stats/retrieve_metadata_from_WoC_mongodb.py
+    outs:
+    - data/unique_project_info.parquet
