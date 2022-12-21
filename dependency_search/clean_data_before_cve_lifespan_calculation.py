@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName) <combined_df> <languages_to_class.json> <cleaned_df>
+"""Usage: %(scriptName) <combined_df> <languages_to_class.json> <cleaned_cve_df>
 
+Removes each row (commit and cve) matching following criteria:
+1) Commit is in not supported language
+2) Commit or cve has wrong date (either too far in past or in future)
+3) Commit has multiple projects assigned in c2P map
 Requires result of find_programming_language_for_cve.py and prepare_language_to_class_dict.py
 """
 import json

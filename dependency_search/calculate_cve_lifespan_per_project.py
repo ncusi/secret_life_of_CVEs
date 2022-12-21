@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName) <cleaned_df> <languages_to_class.json> <cve_lifespan_df>
+"""Usage: %(scriptName) <cleaned_cve_df> <cve_lifespan_df>
 
-Requires result of clean_data_before_cve_lifespan_calculation.py and prepare_language_to_class_dict.py
+Calculates and saves dataframe with cve lifespan for each project
+Requires result of clean_data_before_cve_lifespan_calculation.py
 """
-import json
 import sys
 
 import numpy as np
@@ -14,19 +14,13 @@ import pandas as pd
 
 def main():
     cleaned_df_filename = sys.argv[1]
-    language_to_class_dict_filename = sys.argv[2]
-    cve_lifespan_df_filename = sys.argv[3]
-    language_to_class = read_language_to_class_dict(language_to_class_dict_filename)
-    language_columns = language_to_class['language_columns']
+    cve_lifespan_df_filename = sys.argv[2]
 
     cleaned_df = pd.read_parquet(cleaned_df_filename)
     lifespan_df = calculate_lifespan(cleaned_df)
-
-
-def read_language_to_class_dict(language_to_class_dict_filename):
-    with open(language_to_class_dict_filename, 'r') as f:
-        language_to_class = json.load(f)
-    return language_to_class
+    cve_lifespan_df = pd.merge(left=cleaned_df, right=lifespan_df,
+                               left_on=['commit_cves', 'project_names'], right_on=['commit_cves', 'project_names'])
+    cve_lifespan_df.to_parquet(cve_lifespan_df_filename)
 
 
 def calculate_lifespan(df):
@@ -47,7 +41,15 @@ def calculate_lifespan(df):
                                                 cve_death_max_commiter_time=('commiter_time', np.max),
                                                 cve_death_min_author_time=('author_time', np.min),
                                                 cve_death_max_author_time=('author_time', np.max))
-    cve_lifespan_per_project_df = project_names_gb_agg.reset_index()
+    cve_death_df = project_names_gb_agg.reset_index()
+    cve_lifespan_per_project_df = pd.merge(left=birth_df, right=cve_death_df, left_on=['commit_cves'],
+                                           right_on=['commit_cves'])
+    cve_lifespan_per_project_df['cve_lifespan_commiter_time'] = pd.to_datetime(
+        cve_lifespan_per_project_df['cve_death_max_commiter_time']) - pd.to_datetime(
+        cve_lifespan_per_project_df['cve_birth_commiter_time'])
+    cve_lifespan_per_project_df['cve_lifespan_author_time'] = pd.to_datetime(
+        cve_lifespan_per_project_df['cve_death_max_author_time']) - pd.to_datetime(
+        cve_lifespan_per_project_df['cve_birth_author_time'])
     return cve_lifespan_per_project_df
 
 
