@@ -41,3 +41,20 @@ stages:
     - path: data/unique_project_info.parquet
       md5: ab9166e42442236878e119a9c8fcfe49
       size: 2664107
+  merge_cve_dates:
+    cmd: python3 dependency_search/merge_cve_df_with_published_cve_df.py data/cve_df_filename
+      data/published_cve_df_filename data/commits_with_published_cve_df
+    deps:
+    - path: data/cve_df_filename
+      md5: 2edd1805e47670ff381b6e81f5b03463
+      size: 60583695
+    - path: data/published_cve_df_filename
+      md5: cac0d75d900b0904b5f79c7e35a2beb9
+      size: 775181
+    - path: dependency_search/merge_cve_df_with_published_cve_df.py
+      md5: 1e610e309c9046f8e41ad7110609dc87
+      size: 1269
+    outs:
+    - path: data/commits_with_published_cve_df
+      md5: 31b20aad03f07e4d13d9dbf163746749
+      size: 52434934
