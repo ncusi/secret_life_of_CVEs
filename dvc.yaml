@@ -23,3 +23,12 @@ stages:
     - projects_stats/retrieve_metadata_from_WoC_mongodb.py
     outs:
     - data/unique_project_info.parquet
+  merge_cve_dates:
+    cmd: python3 dependency_search/merge_cve_df_with_published_cve_df.py data/cve_df_filename
+      data/published_cve_df_filename data/commits_with_published_cve_df
+    deps:
+    - data/cve_df_filename
+    - data/published_cve_df_filename
+    - dependency_search/merge_cve_df_with_published_cve_df.py
+    outs:
+    - data/commits_with_published_cve_df
