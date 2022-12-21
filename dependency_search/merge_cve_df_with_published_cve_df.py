@@ -11,7 +11,15 @@ import pandas as pd
 
 
 def merge_published_cve(cve_df, published_cve_df):
-    time_df = cve_df[['commit', 'commit_cves', 'commit_time', 'project_names']]
+    # find correct name of column
+    time_column='commit_time'
+    if time_column not in cve_df.columns:
+        time_column = 'commiter_time'
+    if time_column not in cve_df.columns:
+        time_column = 'committer_time'
+    # TODO: further error checking
+
+    time_df = cve_df[['commit', 'commit_cves', time_column, 'project_names']]
     exploded_time_df = time_df.explode('commit_cves')
     combined_df = exploded_time_df.merge(published_cve_df, left_on='commit_cves', right_on='cve')
     return combined_df
