@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName) <cve_df_filename> <published_cve_df_filename>
+"""Usage: %(scriptName) <cve_df> <published_cve_df>
 
 Retrieves cve published date via rest api from instance of CVE-Search
 Requires results of cve_search_parser.py
