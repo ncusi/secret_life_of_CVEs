@@ -52,9 +52,9 @@ stages:
       md5: cac0d75d900b0904b5f79c7e35a2beb9
       size: 775181
     - path: dependency_search/merge_cve_df_with_published_cve_df.py
-      md5: 1e610e309c9046f8e41ad7110609dc87
-      size: 1269
+      md5: 4e806ddf27616e15862d9cbcae7ae804
+      size: 1000
     outs:
     - path: data/commits_with_published_cve_df
-      md5: 31b20aad03f07e4d13d9dbf163746749
-      size: 52434934
+      md5: c60c6533f7ff85eb390ef6f99385aab6
+      size: 58575700
