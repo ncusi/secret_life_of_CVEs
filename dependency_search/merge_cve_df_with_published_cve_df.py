@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName) <cve_df_filename> <published_cve_df_filename> <commits_with_published_cve_df_filename>
+"""Usage: %(scriptName) <cve_df> <published_cve_df> <commits_with_published_cve_df>
 
 Requires result of cve_search_parser.py and retrieve_cve_dates.py
 """
@@ -19,7 +19,7 @@ def merge_published_cve(cve_df, published_cve_df):
         time_column = 'committer_time'
     # TODO: further error checking
 
-    time_df = cve_df[['commit', 'commit_cves', time_column, 'project_names']]
+    time_df = cve_df[['commit', 'commit_cves', 'commiter_time', 'author_time', 'project_names']]
     exploded_time_df = time_df.explode('commit_cves')
     combined_df = exploded_time_df.merge(published_cve_df, left_on='commit_cves', right_on='cve')
     return combined_df

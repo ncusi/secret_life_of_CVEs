@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName) <commits_with_published_cve_df_filename> <extension_to_language.json> <combined_df_filename>
+"""Usage: %(scriptName) <commits_with_published_cve_df> <extension_to_language.json> <combined_df>
 
 Requires result of merge_cve_df_with_published_cve_df.py and prepare_extension_to_language_dict.py
 """

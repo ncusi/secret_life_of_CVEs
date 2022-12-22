@@ -3,7 +3,7 @@
 
 """Usage: %(scriptName) <language_to_class.json>
 
-Saves dictionaries from programming language to language classes as a json file.
+Prepares dictionaries from programming language to language classes as a json file.
 """
 import json
 import sys
@@ -43,7 +43,7 @@ def prepare_languages_classes():
                  ('lang_JavaScript', 1, 2, 2, 1),
                  ('lang_Kotlin', 1, 1, 1, 1),
                  ('lang_Lua', 2, 2, 2, 1),
-                 ('lang_Objective-C,', 1, 1, 2, 1),
+                 ('lang_Objective-C', 1, 1, 2, 1),
                  ('lang_OCaml', 3, 1, 1, 1),
                  ('lang_Perl', 1, 2, 2, 1),
                  ('lang_PHP', 1, 2, 2, 1),
@@ -74,13 +74,16 @@ def prepare_language_to_class(languages):
     language_compilation_class = {}
     language_type_class = {}
     language_memory_model = {}
+    language_columns = []
     for entry in languages:
         language = entry[0]
+        language_columns.append(language)
         language_programming_paradigm[language] = entry[1]
         language_compilation_class[language] = entry[2]
         language_type_class[language] = entry[3]
         language_memory_model[language] = entry[4]
     language_to_class = {
+        'language_columns': language_columns,
         'programming_paradigm': language_programming_paradigm,
         'compilation_class': language_compilation_class,
         'type_class': language_type_class,
