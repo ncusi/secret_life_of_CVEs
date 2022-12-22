@@ -7,8 +7,8 @@ stages:
       md5: 2edd1805e47670ff381b6e81f5b03463
       size: 60583695
     - path: dependency_search/retrieve_cve_dates.py
-      md5: 6c06b8025c8079c103cc9b1b92d8ae08
-      size: 2082
+      md5: 1334463f333601c8a0b86ec9b69b6bbf
+      size: 2064
     outs:
     - path: data/published_cve_df_filename
       md5: cac0d75d900b0904b5f79c7e35a2beb9
