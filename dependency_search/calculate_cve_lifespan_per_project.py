@@ -1,31 +1,37 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName) <cleaned_cve_df> <cve_lifespan_df>
+"""Usage: %(scriptName) <cleaned_cve_df> <language_to_class.json> <cve_lifespan_language_df>
 
-Calculates and saves dataframe with cve lifespan for each project
+Calculates and saves dataframe with cve lifespan for each project, assigns groups per each programming language class
 Requires result of clean_data_before_cve_lifespan_calculation.py
 """
+import json
 import sys
 
 import numpy as np
 import pandas as pd
 
-
 def main():
     cleaned_df_filename = sys.argv[1]
-    cve_lifespan_df_filename = sys.argv[2]
+    language_to_class_dict_filename = sys.argv[2]
+    cve_lifespan_language_df_filename = sys.argv[3]
+
+    language_to_class_dict = read_language_to_class_dict(language_to_class_dict_filename)
 
     cleaned_df = pd.read_parquet(cleaned_df_filename)
     lifespan_df = calculate_lifespan(cleaned_df)
+    lifespan_df.drop_duplicates(inplace=True)
     embargo_df = calculate_embargo(cleaned_df)
+    embargo_df.drop_duplicates(inplace=True)
     cve_lifespan_df = pd.merge(left=cleaned_df, right=lifespan_df,
                                left_on=['commit_cves', 'project_names'],
                                right_on=['commit_cves', 'project_names'])
     cve_lifespan_embargo_df = pd.merge(left=cve_lifespan_df, right=embargo_df,
                                        left_on=['commit_cves', 'project_names'],
                                        right_on=['commit_cves', 'project_names'])
-    cve_lifespan_embargo_df.to_parquet(cve_lifespan_df_filename)
+    lifespans_language_df = assign_programming_language_classes(cve_lifespan_embargo_df, language_to_class_dict)
+    lifespans_language_df.to_parquet(cve_lifespan_language_df_filename)
 
 
 def calculate_lifespan(df):
@@ -67,6 +73,35 @@ def calculate_embargo(df):
     embargo_df['embargo_max'] = embargo_df['published_date'] > embargo_df['commiter_time_max']
     embargo_df = embargo_df[['project_names', 'commit_cves', 'embargo_min', 'embargo_max']]
     return embargo_df
+
+
+def assign_programming_language_classes(df, language_to_class_dict):
+    language_columns = language_to_class_dict['language_columns']
+    programming_paradigm = language_to_class_dict['programming_paradigm']
+    compilation_class = language_to_class_dict['compilation_class']
+    type_class = language_to_class_dict['type_class']
+    memory_model = language_to_class_dict['memory_model']
+
+    df.replace(0, np.nan, inplace=True)
+    df[language_columns] = df[language_columns].where(pd.isna, language_columns, axis=1)
+    lifespans_language_df = df.melt(id_vars=['commit_cves', 'project_names',
+                                             'cve_lifespan_commiter_time', 'cve_lifespan_author_time',
+                                             'embargo_min','embargo_max']).dropna()
+    lifespans_language_df['programming_paradigm'] = lifespans_language_df['value']\
+        .apply(lambda language: programming_paradigm[language])
+    lifespans_language_df['compilation_class'] = lifespans_language_df['value']\
+        .apply(lambda language: compilation_class[language])
+    lifespans_language_df['type_class'] = lifespans_language_df['value']\
+        .apply(lambda language: type_class[language])
+    lifespans_language_df['memory_model'] = lifespans_language_df['value']\
+        .apply(lambda language: memory_model[language])
+    return lifespans_language_df
+
+
+def read_language_to_class_dict(language_to_class_dict_filename):
+    with open(language_to_class_dict_filename, 'r') as f:
+        language_to_class = json.load(f)
+    return language_to_class
 
 
 if __name__ == '__main__':

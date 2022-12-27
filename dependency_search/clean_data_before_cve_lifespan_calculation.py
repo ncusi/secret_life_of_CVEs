@@ -27,6 +27,7 @@ def main():
     selected_languages_df = remove_additional_languages(combined_df, language_columns)
     corrected_dates_df = remove_incorrect_dates(selected_languages_df)
     corrected_projects_df = remove_more_than_one_project(corrected_dates_df)
+    corrected_projects_df.drop_duplicates(inplace=True)
     corrected_projects_df.to_parquet(cleaned_data_df_filename)
 
 
