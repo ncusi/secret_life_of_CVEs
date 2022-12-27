@@ -18,9 +18,14 @@ def main():
 
     cleaned_df = pd.read_parquet(cleaned_df_filename)
     lifespan_df = calculate_lifespan(cleaned_df)
+    embargo_df = calculate_embargo(cleaned_df)
     cve_lifespan_df = pd.merge(left=cleaned_df, right=lifespan_df,
-                               left_on=['commit_cves', 'project_names'], right_on=['commit_cves', 'project_names'])
-    cve_lifespan_df.to_parquet(cve_lifespan_df_filename)
+                               left_on=['commit_cves', 'project_names'],
+                               right_on=['commit_cves', 'project_names'])
+    cve_lifespan_embargo_df = pd.merge(left=cve_lifespan_df, right=embargo_df,
+                                       left_on=['commit_cves', 'project_names'],
+                                       right_on=['commit_cves', 'project_names'])
+    cve_lifespan_embargo_df.to_parquet(cve_lifespan_df_filename)
 
 
 def calculate_lifespan(df):
@@ -51,6 +56,17 @@ def calculate_lifespan(df):
         cve_lifespan_per_project_df['cve_death_max_author_time']) - pd.to_datetime(
         cve_lifespan_per_project_df['cve_birth_author_time'])
     return cve_lifespan_per_project_df
+
+
+def calculate_embargo(df):
+    embargo_df = df.groupby(['project_names', 'commit_cves', 'published_date']) \
+        .aggregate({'commiter_time': ['min', 'max']})
+    embargo_df.columns = ['_'.join(col) for col in embargo_df.columns]
+    embargo_df = embargo_df.reset_index()
+    embargo_df['embargo_min'] = embargo_df['published_date'] > embargo_df['commiter_time_min']
+    embargo_df['embargo_max'] = embargo_df['published_date'] > embargo_df['commiter_time_max']
+    embargo_df = embargo_df[['project_names', 'commit_cves', 'embargo_min', 'embargo_max']]
+    return embargo_df
 
 
 if __name__ == '__main__':
