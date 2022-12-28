@@ -19,7 +19,6 @@ def main():
     commits_df = pd.read_parquet(commits_with_published_cve_df_filename)
     extension_to_language = load_extension_to_language_dict(extension_to_language_dict_filename)
     result_df = add_language_to_df(commits_df, extension_to_language)
-    result_df_lang_columns = result_df.filter(regex=("lang_.*"))
     result_df.to_parquet(combined_df_filename)
 
 
