@@ -20,7 +20,6 @@ def main():
     extension_to_language = load_extension_to_language_dict(extension_to_language_dict_filename)
     result_df = add_language_to_df(commits_df, extension_to_language)
     result_df_lang_columns = result_df.filter(regex=("lang_.*"))
-    result_df['most_common_language'] = result_df_lang_columns.idxmax(axis=1)
     result_df.to_parquet(combined_df_filename)
 
 
