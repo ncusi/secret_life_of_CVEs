@@ -45,5 +45,5 @@ Thumbs.db
 *.wmv
 
 # Data files
-data/
+data/*
 !data/*.dvc
