@@ -14,13 +14,13 @@ stages:
       md5: cac0d75d900b0904b5f79c7e35a2beb9
       size: 775181
   retrieve_cve_info:
-    cmd: python3 dependency_search/retrieve_cve_info.py data/published_cve_df_filename
+    cmd: python3 cve_information/retrieve_cve_info.py data/published_cve_df_filename
       data/unique_cve_info-cvss_cwe_etc.parquet
     deps:
     - path: data/published_cve_df_filename
       md5: cac0d75d900b0904b5f79c7e35a2beb9
       size: 775181
-    - path: dependency_search/retrieve_cve_info.py
+    - path: cve_information/retrieve_cve_info.py
       md5: 555e621cac7a1b3da6d461848175a5aa
       size: 3407
     outs:
