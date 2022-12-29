@@ -58,3 +58,17 @@ stages:
     - path: data/commits_with_published_cve_df
       md5: c60c6533f7ff85eb390ef6f99385aab6
       size: 58575700
+  add_cvss_rankings:
+    cmd: python3 cve_information/add_cvss_ranking.py data/unique_cve_info-cvss_cwe_etc.parquet
+      data/unique_cve_info-cvss_cwe_ranking_etc.parquet
+    deps:
+    - path: cve_information/add_cvss_ranking.py
+      md5: d02b54caec5c21431f6a1d9921527ee4
+      size: 3434
+    - path: data/unique_cve_info-cvss_cwe_etc.parquet
+      md5: 11d3d0ba71838bf742de7d766c736aa1
+      size: 869228
+    outs:
+    - path: data/unique_cve_info-cvss_cwe_ranking_etc.parquet
+      md5: 338c991c34b7432414cb5f70046a8b7e
+      size: 916419
