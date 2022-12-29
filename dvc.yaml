@@ -12,7 +12,7 @@ stages:
       data/unique_cve_info-cvss_cwe_etc.parquet
     deps:
     - data/published_cve_df_filename
-    - dependency_search/retrieve_cve_info.py
+    - cve_information/retrieve_cve_info.py
     outs:
     - data/unique_cve_info-cvss_cwe_etc.parquet
   retrieve_project_info:
