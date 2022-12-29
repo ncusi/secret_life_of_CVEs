@@ -32,3 +32,11 @@ stages:
     - dependency_search/merge_cve_df_with_published_cve_df.py
     outs:
     - data/commits_with_published_cve_df
+  add_cvss_rankings:
+    cmd: python3 cve_information/add_cvss_ranking.py data/unique_cve_info-cvss_cwe_etc.parquet
+      data/unique_cve_info-cvss_cwe_ranking_etc.parquet
+    deps:
+    - cve_information/add_cvss_ranking.py
+    - data/unique_cve_info-cvss_cwe_etc.parquet
+    outs:
+    - data/unique_cve_info-cvss_cwe_ranking_etc.parquet
