@@ -11,7 +11,13 @@ import pandas as pd
 
 
 def merge_published_cve(cve_df, published_cve_df):
-    time_df = cve_df[['commit', 'commit_cves', 'commiter_time', 'author_time', 'project_names']]
+    ext_columns = []
+    for column in list(cve_df.columns):
+        if column[0:4] == 'ext_':
+            ext_columns.append(column)
+    selected_columns = ['commit', 'commit_cves', 'commiter_time', 'author_time', 'project_names',
+                        'total_number_of_files'] + ext_columns
+    time_df = cve_df[selected_columns]
     exploded_time_df = time_df.explode('commit_cves')
     combined_df = exploded_time_df.merge(published_cve_df, left_on='commit_cves', right_on='cve')
     return combined_df
