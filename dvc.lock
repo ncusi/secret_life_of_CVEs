@@ -85,3 +85,20 @@ stages:
     - path: data/extension_to_language.json
       md5: 1d02992b8f88b6502b110c192f85aba6
       size: 19299
+  languages_for_cve:
+    cmd: python3 dependency_search/find_programming_language_for_cve.py data/commits_with_published_cve_df
+      data/extension_to_language.json data/combined_df
+    deps:
+    - path: data/commits_with_published_cve_df
+      md5: c60c6533f7ff85eb390ef6f99385aab6
+      size: 58575700
+    - path: data/extension_to_language.json
+      md5: 1d02992b8f88b6502b110c192f85aba6
+      size: 19299
+    - path: dependency_search/find_programming_language_for_cve.py
+      md5: 260ae5fab08772353acd86546540ac51
+      size: 3263
+    outs:
+    - path: data/combined_df
+      md5: c60c6533f7ff85eb390ef6f99385aab6
+      size: 58575700

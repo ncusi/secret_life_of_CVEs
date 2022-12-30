@@ -48,3 +48,12 @@ stages:
     outs:
     - data/extension_to_language.json:
         cache: false
+  languages_for_cve:
+    cmd: python3 dependency_search/find_programming_language_for_cve.py data/commits_with_published_cve_df
+      data/extension_to_language.json data/combined_df
+    deps:
+    - data/commits_with_published_cve_df
+    - data/extension_to_language.json
+    - dependency_search/find_programming_language_for_cve.py
+    outs:
+    - data/combined_df
