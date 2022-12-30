@@ -57,3 +57,10 @@ stages:
     - dependency_search/find_programming_language_for_cve.py
     outs:
     - data/combined_df
+  language_to_class:
+    cmd: python3 dependency_search/prepare_language_to_class_dict.py data/language_to_class.json
+    deps:
+    - dependency_search/prepare_language_to_class_dict.py
+    outs:
+    - data/language_to_class.json:
+        cache: false

@@ -102,3 +102,13 @@ stages:
     - path: data/combined_df
       md5: c60c6533f7ff85eb390ef6f99385aab6
       size: 58575700
+  language_to_class:
+    cmd: python3 dependency_search/prepare_language_to_class_dict.py data/language_to_class.json
+    deps:
+    - path: dependency_search/prepare_language_to_class_dict.py
+      md5: 0e21cd561039d6418117052b14a4391a
+      size: 3724
+    outs:
+    - path: data/language_to_class.json
+      md5: 5216790c4799591b4112e978ebfc193d
+      size: 3438
