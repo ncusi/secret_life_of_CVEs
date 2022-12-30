@@ -72,3 +72,16 @@ stages:
     - path: data/unique_cve_info-cvss_cwe_ranking_etc.parquet
       md5: 338c991c34b7432414cb5f70046a8b7e
       size: 916419
+  extension_to_language:
+    cmd: python3 dependency_search/prepare_extension_to_language_dict.py data/extension_to_language.json
+    deps:
+    - path: dependency_search/prepare_extension_to_language_dict.py
+      md5: 355116c3fa764839007208e247ba8740
+      size: 2032
+    - path: https://raw.githubusercontent.com/github/linguist/master/lib/linguist/languages.yml
+      checksum: '"63d3d5d3b8efd4fd6b3bbe70490e6a60f3a47a934af098966717a242b04fb81b"'
+      size: 136180
+    outs:
+    - path: data/extension_to_language.json
+      md5: 1d02992b8f88b6502b110c192f85aba6
+      size: 19299

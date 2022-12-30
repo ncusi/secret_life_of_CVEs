@@ -1,6 +1,6 @@
 stages:
   retrieve_cve_dates:
-    cmd: python3 dependency_search/retrieve_cve_dates.py data/cve_df_filename 
+    cmd: python3 dependency_search/retrieve_cve_dates.py data/cve_df_filename
       data/published_cve_df_filename
     deps:
     - data/cve_df_filename
@@ -40,3 +40,11 @@ stages:
     - data/unique_cve_info-cvss_cwe_etc.parquet
     outs:
     - data/unique_cve_info-cvss_cwe_ranking_etc.parquet
+  extension_to_language:
+    cmd: python3 dependency_search/prepare_extension_to_language_dict.py data/extension_to_language.json
+    deps:
+    - dependency_search/prepare_extension_to_language_dict.py
+    - https://raw.githubusercontent.com/github/linguist/master/lib/linguist/languages.yml
+    outs:
+    - data/extension_to_language.json:
+        cache: false
