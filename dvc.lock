@@ -72,3 +72,43 @@ stages:
     - path: data/unique_cve_info-cvss_cwe_ranking_etc.parquet
       md5: 338c991c34b7432414cb5f70046a8b7e
       size: 916419
+  extension_to_language:
+    cmd: python3 dependency_search/prepare_extension_to_language_dict.py data/extension_to_language.json
+    deps:
+    - path: dependency_search/prepare_extension_to_language_dict.py
+      md5: 355116c3fa764839007208e247ba8740
+      size: 2032
+    - path: https://raw.githubusercontent.com/github/linguist/master/lib/linguist/languages.yml
+      checksum: '"63d3d5d3b8efd4fd6b3bbe70490e6a60f3a47a934af098966717a242b04fb81b"'
+      size: 136180
+    outs:
+    - path: data/extension_to_language.json
+      md5: 1d02992b8f88b6502b110c192f85aba6
+      size: 19299
+  languages_for_cve:
+    cmd: python3 dependency_search/find_programming_language_for_cve.py data/commits_with_published_cve_df
+      data/extension_to_language.json data/combined_df
+    deps:
+    - path: data/commits_with_published_cve_df
+      md5: c60c6533f7ff85eb390ef6f99385aab6
+      size: 58575700
+    - path: data/extension_to_language.json
+      md5: 1d02992b8f88b6502b110c192f85aba6
+      size: 19299
+    - path: dependency_search/find_programming_language_for_cve.py
+      md5: 260ae5fab08772353acd86546540ac51
+      size: 3263
+    outs:
+    - path: data/combined_df
+      md5: c60c6533f7ff85eb390ef6f99385aab6
+      size: 58575700
+  language_to_class:
+    cmd: python3 dependency_search/prepare_language_to_class_dict.py data/language_to_class.json
+    deps:
+    - path: dependency_search/prepare_language_to_class_dict.py
+      md5: 0e21cd561039d6418117052b14a4391a
+      size: 3724
+    outs:
+    - path: data/language_to_class.json
+      md5: 5216790c4799591b4112e978ebfc193d
+      size: 3438
