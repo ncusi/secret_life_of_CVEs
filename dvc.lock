@@ -129,3 +129,20 @@ stages:
     - path: data/cleaned_cve_df
       md5: a1935e3bef9b9e32b4f2813b94ef2243
       size: 24064150
+  compute_cve_lifespan:
+    cmd: python3 dependency_search/calculate_cve_lifespan_per_project.py data/cleaned_cve_df
+      data/language_to_class.json data/cve_lifespan_language_df
+    deps:
+    - path: data/cleaned_cve_df
+      md5: a1935e3bef9b9e32b4f2813b94ef2243
+      size: 24064150
+    - path: data/language_to_class.json
+      md5: 5216790c4799591b4112e978ebfc193d
+      size: 3438
+    - path: dependency_search/calculate_cve_lifespan_per_project.py
+      md5: 2457f43ae98c5ef5314c0023eb02c323
+      size: 6958
+    outs:
+    - path: data/cve_lifespan_language_df
+      md5: 5e27f1e3147139afda2db2f037a070c3
+      size: 8711252
