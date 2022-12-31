@@ -63,3 +63,12 @@ stages:
     outs:
     - data/language_to_class.json:
         cache: false
+  clean_combined_df:
+    cmd: python3 dependency_search/clean_data_before_cve_lifespan_calculation.py data/combined_df
+      data/language_to_class.json data/cleaned_cve_df
+    deps:
+    - data/combined_df
+    - data/language_to_class.json
+    - dependency_search/clean_data_before_cve_lifespan_calculation.py
+    outs:
+    - data/cleaned_cve_df
