@@ -52,12 +52,12 @@ stages:
       md5: cac0d75d900b0904b5f79c7e35a2beb9
       size: 775181
     - path: dependency_search/merge_cve_df_with_published_cve_df.py
-      md5: 4e806ddf27616e15862d9cbcae7ae804
-      size: 1000
+      md5: 92cde17947d19098c1d1a5a33f0afc56
+      size: 1237
     outs:
     - path: data/commits_with_published_cve_df
-      md5: c60c6533f7ff85eb390ef6f99385aab6
-      size: 58575700
+      md5: 3e8506d1bba834b6edf8a5e7f3528037
+      size: 76845293
   add_cvss_rankings:
     cmd: python3 cve_information/add_cvss_ranking.py data/unique_cve_info-cvss_cwe_etc.parquet
       data/unique_cve_info-cvss_cwe_ranking_etc.parquet
@@ -90,8 +90,8 @@ stages:
       data/extension_to_language.json data/combined_df
     deps:
     - path: data/commits_with_published_cve_df
-      md5: c60c6533f7ff85eb390ef6f99385aab6
-      size: 58575700
+      md5: 3e8506d1bba834b6edf8a5e7f3528037
+      size: 76845293
     - path: data/extension_to_language.json
       md5: 1d02992b8f88b6502b110c192f85aba6
       size: 19299
@@ -100,8 +100,8 @@ stages:
       size: 3263
     outs:
     - path: data/combined_df
-      md5: c60c6533f7ff85eb390ef6f99385aab6
-      size: 58575700
+      md5: ee44b4e1b17386cdf5e43bce507ba2c1
+      size: 80110439
   language_to_class:
     cmd: python3 dependency_search/prepare_language_to_class_dict.py data/language_to_class.json
     deps:
