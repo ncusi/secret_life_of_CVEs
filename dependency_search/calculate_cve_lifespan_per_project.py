@@ -17,7 +17,7 @@ def main():
     cleaned_df_filename = sys.argv[1]
     language_to_class_dict_filename = sys.argv[2]
     cve_lifespan_language_df_filename = sys.argv[3]
-    cve_lifespan_df_filename = sys.argv[3]
+    cve_lifespan_df_filename = sys.argv[4]
 
     language_to_class_dict = read_language_to_class_dict(language_to_class_dict_filename)
 
