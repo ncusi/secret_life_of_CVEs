@@ -130,7 +130,7 @@ def assign_programming_language_class(df, language_to_class_dict):
     type_class = language_to_class_dict['type_class']
     memory_model = language_to_class_dict['memory_model']
 
-    cve_lifespans_df = df.copy()
+    cve_lifespans_df = df.copy().drop_duplicates()
     cve_lifespans_df['programming_paradigm'] = cve_lifespans_df['most_common_language'] \
         .apply(lambda language: programming_paradigm[language])
     cve_lifespans_df['compilation_class'] = cve_lifespans_df['most_common_language'] \
