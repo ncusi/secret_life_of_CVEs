@@ -82,3 +82,12 @@ stages:
     outs:
     - data/cve_lifespan_language_df
     - data/cve_lifespan_df
+  merge_cve_info_into_lifespan:
+    cmd: python3 dependency_search/merge_cve_info_and_cve_lifespan.py data/unique_cve_info-cvss_cwe_ranking_etc.parquet
+      data/cve_lifespan_language_df data/cve_survival_input_df
+    deps:
+    - data/cve_lifespan_language_df
+    - data/unique_cve_info-cvss_cwe_ranking_etc.parquet
+    - dependency_search/merge_cve_info_and_cve_lifespan.py
+    outs:
+    - data/cve_survival_input_df
