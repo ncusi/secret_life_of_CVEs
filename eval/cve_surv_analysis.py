@@ -181,33 +181,6 @@ def f_map_generic(row, column_name, values_ranking_hash):
     return None
 
 
-# TODO: make more generic
-def f_map_cvss_v31_rankings(row):
-    a = row['CVSS v3.1 Ratings']
-    if a == 'None':
-        return 1
-    if a == 'Low':
-        return 2
-    if a == 'Medium':
-        return 3
-    if a == 'High':
-        return 4
-    if a == 'Critical':
-        return 5
-    else:
-        return 0
-
-
-cvss_v31_rankings_condition_names = {
-    1: 'None',
-    2: 'Low',
-    3: 'Medium',
-    4: 'High',
-    5: 'Critical',
-    0: 'no CVSS Ranking'
-}
-
-
 @click.command()
 # parameters file (for DVC use), and whether it is auto-saved
 # see e.g. https://dvc.org/doc/command-reference/params
