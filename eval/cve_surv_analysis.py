@@ -341,14 +341,14 @@ def main(params_file, save_params,
     if 'limit' in params['cve_survival_analysis'] \
             and params['cve_survival_analysis']['limit'] is not None:
         click.echo(f"Computing stats for first {params['cve_survival_analysis']['limit']} elements,"+
-                   " for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
+                   f" for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
                    file=sys.stderr)
         S1, S2 = apply_stats_for_each_value(params, df[:params['cve_survival_analysis']['limit']],
                                             f_map,
                                             condition_names=condition_names_hash)
     else:
         click.echo(f"Computing stats for all {df.shape[0]} elements," +
-                   " for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
+                   f" for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
                    file=sys.stderr)
         S1, S2 = apply_stats_for_each_value(params, df,
                                             f_map,
