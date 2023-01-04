@@ -322,21 +322,25 @@ def main(params_file, save_params,
         df['Y'] = df[params['cve_survival_analysis']['lifetime_column_name']].dt.days
 
     # f_map and ranking names
-    values_list = create_values_ranking_list(df[params['cve_survival_analysis']['risk_column_name']],
-                                             df.dtypes[params['cve_survival_analysis']['risk_column_name']])
-    click.echo(f"risk column values, ordered   = {values_list}", file=sys.stderr)
+    condition_names_hash = None
+    if pd.api.types.is_integer_dtype(df.dtypes[params['cve_survival_analysis']['risk_column_name']]):
+        f_map = lambda row: f_map_int(row, params['cve_survival_analysis']['risk_column_name'])
+        click.echo(f"risk column is integer valued: {df.dtypes[params['cve_survival_analysis']['risk_column_name']]}",
+                   file=sys.stderr)
+    else:
+        values_list = create_values_ranking_list(df[params['cve_survival_analysis']['risk_column_name']],
+                                                 df.dtypes[params['cve_survival_analysis']['risk_column_name']])
+        click.echo(f"risk column values, ordered = {values_list}", file=sys.stderr)
+        values_hash, condition_names_hash = values_ranking_hashes(values_list)
+        click.echo(f"risk column values hash = {values_hash}", file=sys.stderr)
+        click.echo(f"condition names hash    = {condition_names_hash}", file=sys.stderr)
+
+        f_map = lambda row: f_map_generic(row, params['cve_survival_analysis']['risk_column_name'],
+                                          values_hash)
+
     click.echo(f"risk column values, unordered = " +
                f"{df[params['cve_survival_analysis']['risk_column_name']].unique()};",
                file=sys.stderr)
-    values_hash, condition_names_hash = values_ranking_hashes(values_list)
-    click.echo(f"risk column values hash = {values_hash}", file=sys.stderr)
-    click.echo(f"condition names hash    = {condition_names_hash}", file=sys.stderr)
-
-    if pd.api.types.is_integer_dtype(df.dtypes[params['cve_survival_analysis']['risk_column_name']]):
-        f_map = lambda row: f_map_int(row, params['cve_survival_analysis']['risk_column_name'])
-    else:
-        f_map = lambda row: f_map_generic(row, params['cve_survival_analysis']['risk_column_name'],
-                                          values_hash)
 
     if 'limit' in params['cve_survival_analysis'] \
             and params['cve_survival_analysis']['limit'] is not None:
