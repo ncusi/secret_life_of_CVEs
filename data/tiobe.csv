@@ -1,0 +1,101 @@
+dec2022,dec2021,change,language,ratings,change
+1,1,Python page,Python,16.66%,+3.76%
+2,2,C page,C,16.56%,+4.77%
+3,4,change C++ page,C++,11.94%,+4.21%
+4,3,change Java page,Java,11.82%,+1.70%
+5,5,C# page,C#,4.92%,-1.48%
+6,6,Visual Basic page,Visual Basic,3.94%,-1.46%
+7,7,JavaScript page,JavaScript,3.19%,+0.90%
+8,9,change SQL page,SQL,2.22%,+0.43%
+9,8,change Assembly language page,Assembly language,1.87%,-0.38%
+10,12,change PHP page,PHP,1.62%,+0.12%
+11,11,R page,R,1.25%,-0.34%
+12,19,changeGo page,Go,1.15%,+0.20%
+13,13,Classic Visual Basic page,Classic Visual Basic,1.15%,-0.13%
+14,20,change MATLAB page,MATLAB,0.95%,+0.03%
+15,10,change Swift page,Swift,0.91%,-0.86%
+16,16,Delphi/Object Pascal page,Delphi/Object Pascal,0.85%,-0.30%
+17,15,change Ruby page,Ruby,0.81%,-0.35%
+18,18,Perl page,Perl,0.78%,-0.18%
+19,29,change Objective-C page,Objective-C,0.71%,+0.29%
+20,27,change Rust page,Rust,0.68%,+0.23%
+21,,,Scratch,0.67%,
+22,,,SAS,0.61%,
+23,,,Kotlin,0.58%,
+24,,,Julia,0.52%,
+25,,,Lua,0.47%,
+26,,,Fortran,0.43%,
+27,,,COBOL,0.41%,
+28,,,Lisp,0.39%,
+29,,,(Visual) FoxPro,0.39%,
+30,,,Ada,0.38%,
+31,,,Dart,0.30%,
+32,,,Scala,0.29%,
+33,,,Prolog,0.29%,
+34,,,D,0.28%,
+35,,,PL/SQL,0.27%,
+36,,,Bash,0.24%,
+37,,,PowerShell,0.23%,
+38,,,Haskell,0.22%,
+39,,,Logo,0.22%,
+40,,,Transact-SQL,0.21%,
+41,,,TypeScript,0.21%,
+42,,,ABAP,0.19%,
+43,,,F#,0.19%,
+44,,,OCaml,0.18%,
+45,,,CFML,0.17%,
+46,,,Scheme,0.17%,
+47,,,Erlang,0.15%,
+48,,,LabVIEW,0.15%,
+49,,,Groovy,0.14%,
+50,,,ML,0.14%,
+51,,,ABC,
+51,,,ActionScript,
+51,,,Alice,
+51,,,Apex,
+51,,,APL,
+51,,,AutoLISP,
+51,,,Awk,
+51,,,B4X,
+51,,,C shell,
+51,,,CL (OS/400),
+51,,,CLIPS,
+51,,,Clojure,
+51,,,Common Lisp,
+51,,,Crystal,
+51,,,Elixir,
+51,,,Emacs Lisp,
+51,,,Forth,
+51,,,Hack,
+51,,,Icon,
+51,,,Io,
+51,,,J#,
+51,,,JScript,
+51,,,Korn shell,
+51,,,Ladder Logic,
+51,,,LPC,
+51,,,Modula-2,
+51,,,MQL5,
+51,,,MUMPS,
+51,,,NATURAL,
+51,,,Occam,
+51,,,OpenCL,
+51,,,OpenEdge ABL,
+51,,,PL/I,
+51,,,Q,
+51,,,Racket,
+51,,,Raku,
+51,,,Ring,
+51,,,RPG,
+51,,,S,
+51,,,Smalltalk,
+51,,,Solidity,
+51,,,SPARK,
+51,,,Stata,
+51,,,Tcl,
+51,,,VBScript,
+51,,,Verilog,
+51,,,VHDL,
+51,,,WebAssembly,
+51,,,X++,
+51,,,Xojo,
