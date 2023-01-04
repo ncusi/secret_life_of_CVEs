@@ -6,9 +6,9 @@
 Based on 'notebooks/surv_ana.ipynb' and 'notebooks/surv_clean_programming_classes.ipynb'
 Jupyter Notebooks
 """
+import json
 import pathlib     # file and path handling
 import sys
-#from collections import defaultdict
 
 import numpy as np
 import scipy.stats
@@ -96,20 +96,27 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None):
     click.echo(f"Computing {params['bootstrap_samples']} × bootstrap Dxy "+
                f"for {dff.shape[0]} elements...", file=sys.stderr)
     dxy_bootstrapped = bootstrap_dxy(dff[['E', 'Y', 'agg']], params['bootstrap_samples'])
+    # DEBUG
+    #print(dxy_bootstrapped)
     # confidence interval
     click.echo(f"Computing confidence interval from {len(dxy_bootstrapped)} samples...", file=sys.stderr)
     dxy, ci_low, ci_high = mean_confidence_interval(dxy_bootstrapped, confidence=params['confidence'])
 
     ret = {
+        'Cohort': all_count,
         'Number of patients': stats['count'],
-        '% of cohort': np.round(100.0*selected_count / all_count, 2),
+        '% of cohort': 100.0*selected_count / all_count,
         'Survival days, median': stats['median'],
         'Survival years, median': stats['median'] / 365,
-        'Dxy': np.round(dxy, 3),
-        'Confidence interval 95% low': np.round(ci_low, 2),
-        'Confidence interval 95% high': np.round(ci_high, 2),
+        'Dxy (full)': Dxy(dff['E'], dff['Y'], dff['agg']),
+        'bootstrap': {
+            'Dxy': dxy,
+            'Confidence interval low': ci_low,
+            'Confidence interval high': ci_high,
+            'confidence threshold %': 100.0*params['confidence'],
+            'bootstrap samples': params['bootstrap_samples'],
+        },
     }
-    result = pd.DataFrame(ret, index=(0,))
 
     click.echo("Computing descriptive statistics like mean, median, etc....", file=sys.stderr)
     groups = dff.groupby(by=['agg'])['Y'].aggregate(['count', 'median', 'min', 'max', 'mean', 'std'])
@@ -129,7 +136,7 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None):
     # plt.legend(loc="best")
     # plt.show()
     # plt.clf()
-    return result, groups
+    return ret, groups
 
 
 def create_values_ranking_list(column_s, column_dtype):
@@ -347,19 +354,21 @@ def main(params_file, save_params,
         click.echo(f"Computing stats for first {params['cve_survival_analysis']['limit']} elements,"+
                    f" for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
                    file=sys.stderr)
-        S1, S2 = apply_stats_for_each_value(params, df[:params['cve_survival_analysis']['limit']],
-                                            f_map,
-                                            condition_names=condition_names_hash)
+        measures, groups_df = \
+            apply_stats_for_each_value(params, df[:params['cve_survival_analysis']['limit']],
+                                       f_map,
+                                       condition_names=condition_names_hash)
     else:
         click.echo(f"Computing stats for all {df.shape[0]} elements," +
                    f" for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
                    file=sys.stderr)
-        S1, S2 = apply_stats_for_each_value(params, df,
-                                            f_map,
-                                            condition_names=condition_names_hash)
+        measures, groups_df = \
+            apply_stats_for_each_value(params, df,
+                                       f_map,
+                                       condition_names=condition_names_hash)
     click.echo("", file=sys.stderr)
-    print(S1.T)
-    print(S2)
+    print(json.dumps(measures, indent=4))
+    print(groups_df)
 
 if __name__ == '__main__':
     # does not match signature because of @click decorations
