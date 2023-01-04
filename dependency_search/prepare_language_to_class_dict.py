@@ -22,45 +22,47 @@ def prepare_languages_classes():
     Prepares a list of programming language classes
     :return: list (language name column, programming paradigm, compilation class, type class, memory model
     """
-    languages = [('lang_Ada', 1, 1, 1, 1),
-                 ('lang_Assembly', 1, 1, 2, 2),
-                 ('lang_C', 1, 1, 2, 2),
-                 ('lang_C#', 1, 1, 1, 1),
-                 ('lang_C++', 1, 1, 2, 1),
-                 ('lang_Clojure', 3, 2, 1, 1),
-                 ('lang_Common Lisp', 3, 2, 1, 1),
-                 ('lang_Crystal', 1, 1, 1, 1),
-                 ('lang_Dart', 1, 1, 1, 1),
-                 ('lang_Elixir', 3, 2, 1, 1),
-                 ('lang_Emacs Lisp', 3, 2, 1, 1),
-                 ('lang_Erlang', 3, 2, 1, 1),
-                 ('lang_Forth', 1, 2, 2, 2),
-                 ('lang_Go', 1, 1, 1, 1),
-                 ('lang_Groovy', 1, 2, 1, 1),
-                 ('lang_Haskell', 3, 1, 1, 1),
-                 ('lang_Io', 1, 2, 1, 1),
-                 ('lang_Java', 1, 1, 1, 1),
-                 ('lang_JavaScript', 1, 2, 2, 1),
-                 ('lang_Kotlin', 1, 1, 1, 1),
-                 ('lang_Lua', 2, 2, 2, 1),
-                 ('lang_Objective-C', 1, 1, 2, 1),
-                 ('lang_OCaml', 3, 1, 1, 1),
-                 ('lang_Perl', 1, 2, 2, 1),
-                 ('lang_PHP', 1, 2, 2, 1),
-                 ('lang_PLSQL', 1, 1, 1, 1),
-                 ('lang_PowerShell', 2, 2, 1, 1),
-                 ('lang_Prolog', 3, 2, 1, 1),
-                 ('lang_Python', 1, 2, 1, 1),
-                 ('lang_R', 1, 2, 1, 1),
-                 ('lang_Ruby', 1, 2, 1, 1),
-                 ('lang_Scala', 3, 1, 1, 1),
-                 ('lang_Scheme', 3, 2, 1, 1),
-                 ('lang_Smalltalk', 1, 2, 1, 1),
-                 ('lang_Solidity', 1, 1, 1, 2),
-                 ('lang_Swift', 1, 1, 1, 1),
-                 ('lang_Tcl', 1, 2, 2, 1),
-                 ('lang_TypeScript', 1, 1, 1, 1),
-                 ('lang_VBScript', 2, 1, 1, 1)]
+    languages = [
+        ('lang_Ada', 1, 1, 1, 1, 2),
+        ('lang_Assembly', 1, 1, 2, 2, 3),
+        ('lang_C', 1, 1, 2, 2, 3),
+        ('lang_C#', 1, 1, 1, 1, 2),
+        ('lang_C++', 1, 1, 2, 1, 2),
+        ('lang_Clojure', 3, 2, 1, 1, 1),
+        ('lang_Common Lisp', 3, 2, 1, 1, 1),
+        ('lang_Crystal', 1, 1, 1, 1, 2),
+        ('lang_Dart', 1, 1, 1, 1, 2),
+        ('lang_Elixir', 3, 2, 1, 1, 1),
+        ('lang_Emacs Lisp', 3, 2, 1, 1, 1),
+        ('lang_Erlang', 3, 2, 1, 1, 1),
+        ('lang_Forth', 1, 2, 2, 2, 3),
+        ('lang_Go', 1, 1, 1, 1, 3),
+        ('lang_Groovy', 1, 2, 1, 1, 2),
+        ('lang_Haskell', 3, 1, 1, 1, 1),
+        ('lang_Io', 1, 2, 1, 1, 2),
+        ('lang_Java', 1, 1, 1, 1, 2),
+        ('lang_JavaScript', 1, 2, 2, 1, 2),
+        ('lang_Kotlin', 1, 1, 1, 1, 2),
+        ('lang_Lua', 2, 2, 2, 1, 4),
+        ('lang_Objective-C', 1, 1, 2, 1, 2),
+        ('lang_OCaml', 3, 1, 1, 1, 1),
+        ('lang_Perl', 1, 2, 2, 1, 2),
+        ('lang_PHP', 1, 2, 2, 1, 2),
+        ('lang_PLSQL', 1, 1, 1, 1, 3),
+        ('lang_PowerShell', 2, 2, 1, 1, 4),
+        ('lang_Prolog', 3, 2, 1, 1, 1),
+        ('lang_Python', 1, 2, 1, 1, 2),
+        ('lang_R', 3, 2, 1, 1, 1),
+        ('lang_Ruby', 1, 2, 1, 1, 2),
+        ('lang_Scala', 3, 1, 1, 1, 1),
+        ('lang_Scheme', 3, 2, 1, 1, 1),
+        ('lang_Smalltalk', 1, 2, 1, 1, 2),
+        ('lang_Solidity', 1, 1, 1, 2, 2),
+        ('lang_Swift', 1, 1, 1, 1, 2),
+        ('lang_Tcl', 3, 2, 2, 1, 4),
+        ('lang_TypeScript', 1, 1, 1, 1, 2),
+        ('lang_VBScript', 2, 1, 1, 1, 4),
+    ]
     return languages
 
 
@@ -74,6 +76,7 @@ def prepare_language_to_class(languages):
     language_compilation_class = {}
     language_type_class = {}
     language_memory_model = {}
+    language_extended_programming_paradigm = {}
     language_columns = []
     for entry in languages:
         language = entry[0]
@@ -82,12 +85,14 @@ def prepare_language_to_class(languages):
         language_compilation_class[language] = entry[2]
         language_type_class[language] = entry[3]
         language_memory_model[language] = entry[4]
+        language_extended_programming_paradigm[language] = entry[5]
     language_to_class = {
         'language_columns': language_columns,
         'programming_paradigm': language_programming_paradigm,
         'compilation_class': language_compilation_class,
         'type_class': language_type_class,
-        'memory_model': language_memory_model
+        'memory_model': language_memory_model,
+        'extended_programming_paradigm': language_extended_programming_paradigm
     }
     return language_to_class
 

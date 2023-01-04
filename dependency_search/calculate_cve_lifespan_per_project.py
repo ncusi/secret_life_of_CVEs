@@ -107,6 +107,7 @@ def assign_programming_language_classes(df, language_to_class_dict):
     compilation_class = language_to_class_dict['compilation_class']
     type_class = language_to_class_dict['type_class']
     memory_model = language_to_class_dict['memory_model']
+    extended_programming_paradigm = language_to_class_dict['extended_programming_paradigm']
 
     df.replace(0, np.nan, inplace=True)
     df[language_columns] = df[language_columns].where(pd.isna, language_columns, axis=1)
@@ -121,6 +122,8 @@ def assign_programming_language_classes(df, language_to_class_dict):
         .apply(lambda language: type_class[language])
     cve_lifespans_language_df['memory_model'] = cve_lifespans_language_df['value'] \
         .apply(lambda language: memory_model[language])
+    cve_lifespans_language_df['extended_programming_paradigm'] = cve_lifespans_language_df['value'] \
+        .apply(lambda language: extended_programming_paradigm[language])
     return cve_lifespans_language_df
 
 
@@ -129,6 +132,7 @@ def assign_programming_language_class(df, language_to_class_dict):
     compilation_class = language_to_class_dict['compilation_class']
     type_class = language_to_class_dict['type_class']
     memory_model = language_to_class_dict['memory_model']
+    extended_programming_paradigm = language_to_class_dict['extended_programming_paradigm']
 
     cve_lifespans_df = df.copy().drop_duplicates()
     cve_lifespans_df['programming_paradigm'] = cve_lifespans_df['most_common_language'] \
@@ -139,6 +143,8 @@ def assign_programming_language_class(df, language_to_class_dict):
         .apply(lambda language: type_class[language])
     cve_lifespans_df['memory_model'] = cve_lifespans_df['most_common_language'] \
         .apply(lambda language: memory_model[language])
+    cve_lifespans_df['extended_programming_paradigm'] = cve_lifespans_df['most_common_language'] \
+        .apply(lambda language: extended_programming_paradigm[language])
     return cve_lifespans_df
 
 
