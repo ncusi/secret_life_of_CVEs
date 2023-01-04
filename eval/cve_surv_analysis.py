@@ -8,7 +8,7 @@ Jupyter Notebooks
 """
 import pathlib     # file and path handling
 import sys
-from collections import defaultdict
+#from collections import defaultdict
 
 import numpy as np
 import scipy.stats
@@ -85,7 +85,11 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None):
 
     dff = pd.DataFrame({'E': df['E'], 'Y': df['Y'], 'agg': df.apply(fmap, axis=1)}).dropna()
     selected_count = dff.shape[0]
-    click.echo(f"all = {all_count}, selected = {selected_count}", file=sys.stderr)
+    click.echo(f"all = {all_count}, selected = {selected_count}, uncensored = {dff['E'].sum()}",
+               file=sys.stderr)
+
+    # DEBUG
+    #print(dff.head())
 
     stats = dff['Y'].aggregate(['count', 'median'])
 
@@ -108,7 +112,7 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None):
     result = pd.DataFrame(ret, index=(0,))
 
     click.echo("Computing descriptive statistics like mean, median, etc....", file=sys.stderr)
-    groups = dff.groupby(by=['agg'])['Y'].aggregate(['count', 'median', 'min', 'max', 'std', 'mean'])
+    groups = dff.groupby(by=['agg'])['Y'].aggregate(['count', 'median', 'min', 'max', 'mean', 'std'])
 
     if condition_names:
         groups.index = groups.index.map(condition_names)
@@ -126,6 +130,55 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None):
     # plt.show()
     # plt.clf()
     return result, groups
+
+
+def create_values_ranking_list(column_s, column_dtype):
+    # if column_dtype is ordered category, we can use the order;
+    # or column_dtype is unordered category with two values, any order is good;
+    # or column_dtype is some kind of integer, we can use values
+
+    # or column_dtype == 'category'
+    if isinstance(column_dtype, pd.CategoricalDtype):
+        if column_dtype.ordered:
+            # we can use category ordering as ranking
+            return column_dtype.categories.to_list()
+        if column_dtype.categories.shape[0] == 2:
+            # any order is good, we can get correlation or anti-correlation
+            return column_dtype.categories.to_list()
+
+    if pd.api.types.is_string_dtype(column_dtype) \
+            and column_s.nunique(dropna=True) == 2:
+        return column_s.unique().tolist()
+
+    # we can't create ranking list of values
+    return None
+
+
+def values_ranking_hashes(values_ranking_list):
+    values_ranking_hash = { value: idx
+                            for (idx, value) in enumerate(values_ranking_list) }
+    rankings_condition_names = { idx: value
+                                 for (idx, value) in enumerate(values_ranking_list) }
+
+    return values_ranking_hash, rankings_condition_names
+
+
+def f_map_int(row, column_name, min_value=None, max_value=None):
+    value = int(row[column_name])
+    if min_value is not None and value < min_value:
+        return None
+    if max_value is not None and value > max_value:
+        return None
+
+    return value
+
+
+def f_map_generic(row, column_name, values_ranking_hash):
+    value = row[column_name]
+    if value in values_ranking_hash:
+        return values_ranking_hash[value]
+
+    return None
 
 
 # TODO: make more generic
@@ -165,6 +218,7 @@ cvss_v31_rankings_condition_names = {
 @click.option('--save-params',
               is_flag=True, type=bool, default=False,
               help='Save parameters provided as options in the parameters file (see previous option)')
+# TODO: --save-everything, including default values
 # parameters that can also be found in parameters file
 @click.option('--confidence',
               # could use `max_open=True`, but then `clamp=True` cannot be used
@@ -175,6 +229,8 @@ cvss_v31_rankings_condition_names = {
               help="Number of bootstrap samples to compute Dxy, and its confidence intervals [default: 5]")
 @click.option('--lifetime-column',
               help="Name of column with event time (with CVE lifetime) [default: 'cve_lifespan_commiter_time']")
+@click.option('--risk-column',
+              help="Name of column with risk factor [default: 'CVSS v3.1 Ratings']")
 @click.option('--limit',
               type=click.IntRange(min=1),
               help="Use only first few rows for analysis [default: no limit]")
@@ -182,7 +238,8 @@ cvss_v31_rankings_condition_names = {
 @click.argument('input_df',
                 type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path))
 def main(params_file, save_params,
-         confidence, bootstrap_samples, lifetime_column, limit,
+         confidence, bootstrap_samples,
+         lifetime_column, risk_column, limit,
          input_df):
     """CVE survival analysis script"""
     # processing options and arguments
@@ -196,7 +253,9 @@ def main(params_file, save_params,
 
     # autovivification
     if 'cve_survival_analysis' not in params:
-        params['cve_survival_analysis'] = defaultdict(lambda: None)
+        # maybe https://stackoverflow.com/questions/651794/whats-the-best-way-to-initialize-a-dict-of-dicts-in-python
+        # to avoid `'foo' in d and d['foo'] is not None` code
+        params['cve_survival_analysis'] = {}
 
     # override values in parameters file with options
     if confidence is not None:
@@ -207,6 +266,9 @@ def main(params_file, save_params,
         params_changed = True
     if lifetime_column is not None:
         params['cve_survival_analysis']['lifetime_column_name'] = lifetime_column
+        params_changed = True
+    if risk_column is not None:
+        params['cve_survival_analysis']['risk_column_name'] = risk_column
         params_changed = True
     if limit is not None:
         params['cve_survival_analysis']['limit'] = limit
@@ -227,6 +289,8 @@ def main(params_file, save_params,
         params['bootstrap_samples'] = 5
     if 'lifetime_column_name' not in params['cve_survival_analysis']:
         params['cve_survival_analysis']['lifetime_column_name'] = 'cve_lifespan_commiter_time'
+    if 'risk_column_name' not in params['cve_survival_analysis']:
+        params['cve_survival_analysis']['risk_column_name'] = 'CVSS v3.1 Ratings'
 
     # print parameters
     click.echo("Parameters:", file=sys.stderr)
@@ -235,8 +299,10 @@ def main(params_file, save_params,
     click.echo("- CVE survival analysis:", file=sys.stderr)
     click.echo(f"    - CVE lifetime column name: '{params['cve_survival_analysis']['lifetime_column_name']}'",
                file=sys.stderr)
-    click.echo(f"    - risk factor column name: {'CVSS v3.1 Ratings'} (hardcoded)", file=sys.stderr)
-    if params['cve_survival_analysis']['limit'] is not None:
+    click.echo(f"    - risk factor column name:  '{params['cve_survival_analysis']['risk_column_name']}'",
+               file=sys.stderr)
+    if 'limit' in params['cve_survival_analysis'] \
+            and params['cve_survival_analysis']['limit'] is not None:
         click.echo(f"    - use only first rows: {params['cve_survival_analysis']['limit']}",
                    file=sys.stderr)
     click.echo("", file=sys.stderr)
@@ -256,31 +322,64 @@ def main(params_file, save_params,
                    f"No '{params['cve_survival_analysis']['lifetime_column_name']}' column in dataframe!",
                    err=True)
         sys.exit(1)
+    if params['cve_survival_analysis']['risk_column_name'] not in df.columns:
+        click.echo('\033[31m'+"ERROR"+'\033[39m'+": "+
+                   f"No '{params['risk_survival_analysis']['lifetime_column_name']}' column in dataframe!",
+                   err=True)
+        sys.exit(1)
 
     # censoring and lifetime
     click.echo(f"Computing or extracting CVE lifetime "+
                f"('{params['cve_survival_analysis']['lifetime_column_name']}') in days...", file=sys.stderr)
     params['cve_survival_analysis']['lifetime_column_name [days]'] =\
         f"{params['cve_survival_analysis']['lifetime_column_name']} [days]"
-    # TODO: pass names of columns, instead of creating new columns
+
+    # censoring
+    #censoring_mask = df[params['cve_survival_analysis']['risk_column_name']].isna()
+
     df['E'] = True
+    #df.loc[censoring_mask,'E'] = False
+    #click.echo(f"censored = {censoring_mask.sum()}; uncensored = {df['E'].sum()}; total = {df['E'].count()}",
+    #           file=sys.stderr)
+
+    # TODO: pass names of columns, instead of creating new columns
     if params['cve_survival_analysis']['lifetime_column_name [days]'] in df.columns:
         df['Y'] = df[params['cve_survival_analysis']['lifetime_column_name [days]']]
     else:
         df['Y'] = df[params['cve_survival_analysis']['lifetime_column_name']].dt.days
 
-    if params['cve_survival_analysis']['limit'] is not None:
+    # f_map and ranking names
+    values_list = create_values_ranking_list(df[params['cve_survival_analysis']['risk_column_name']],
+                                             df.dtypes[params['cve_survival_analysis']['risk_column_name']])
+    click.echo(f"risk column values, ordered   = {values_list}", file=sys.stderr)
+    click.echo(f"risk column values, unordered = " +
+               f"{df[params['cve_survival_analysis']['risk_column_name']].unique()};",
+               file=sys.stderr)
+    values_hash, condition_names_hash = values_ranking_hashes(values_list)
+    click.echo(f"risk column values hash = {values_hash}", file=sys.stderr)
+    click.echo(f"condition names hash    = {condition_names_hash}", file=sys.stderr)
+
+    if pd.api.types.is_integer_dtype(df.dtypes[params['cve_survival_analysis']['risk_column_name']]):
+        f_map = lambda row: f_map_int(row, params['cve_survival_analysis']['risk_column_name'])
+    else:
+        f_map = lambda row: f_map_generic(row, params['cve_survival_analysis']['risk_column_name'],
+                                          values_hash)
+
+    if 'limit' in params['cve_survival_analysis'] \
+            and params['cve_survival_analysis']['limit'] is not None:
         click.echo(f"Computing stats for first {params['cve_survival_analysis']['limit']} elements,"+
-                   " for hardcoded risk factor...", file=sys.stderr)
+                   " for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
+                   file=sys.stderr)
         S1, S2 = apply_stats_for_each_value(params, df[:params['cve_survival_analysis']['limit']],
-                                            f_map_cvss_v31_rankings,
-                                            condition_names=cvss_v31_rankings_condition_names)
+                                            f_map,
+                                            condition_names=condition_names_hash)
     else:
         click.echo(f"Computing stats for all {df.shape[0]} elements," +
-                   " for hardcoded risk factor...", file=sys.stderr)
+                   " for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
+                   file=sys.stderr)
         S1, S2 = apply_stats_for_each_value(params, df,
-                                            f_map_cvss_v31_rankings,
-                                            condition_names=cvss_v31_rankings_condition_names)
+                                            f_map,
+                                            condition_names=condition_names_hash)
     click.echo("", file=sys.stderr)
     print(S1.T)
     print(S2)
