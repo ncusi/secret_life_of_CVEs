@@ -198,7 +198,9 @@ def f_map_generic(row, column_name, values_ranking_hash):
 @click.option('--save-params',
               is_flag=True, type=bool, default=False,
               help='Save parameters provided as options in the parameters file (see previous option)')
-# TODO: --save-everything, including default values
+@click.option('--save-every-param',
+              is_flag=True, type=bool, default=False,
+              help='Save every parameter value (including default values) in the parameters file')
 # parameters that can also be found in parameters file
 @click.option('--confidence',
               # could use `max_open=True`, but then `clamp=True` cannot be used
@@ -217,7 +219,7 @@ def f_map_generic(row, column_name, values_ranking_hash):
 # Parquet file containing dataframe with data to do CVE survival analysis on
 @click.argument('input_df',
                 type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path))
-def main(params_file, save_params,
+def main(params_file, save_params, save_every_param,
          confidence, bootstrap_samples,
          lifetime_column, risk_column, limit,
          input_df):
@@ -257,7 +259,7 @@ def main(params_file, save_params,
     # possibly save parameters to parameters file
     if params_changed:
         click.echo("some parameters changed with options from the command line")
-    if params_changed and save_params:
+    if params_changed and save_params and not save_every_param:
         click.echo(f"Saving all parameters back to '{params_file}'...", file=sys.stderr)
         with click.open_file(params_file, mode='w', atomic=True) as yaml_file:
             yaml.safe_dump(params, yaml_file, default_flow_style=False)
@@ -271,6 +273,12 @@ def main(params_file, save_params,
         params['cve_survival_analysis']['lifetime_column_name'] = 'cve_lifespan_commiter_time'
     if 'risk_column_name' not in params['cve_survival_analysis']:
         params['cve_survival_analysis']['risk_column_name'] = 'CVSS v3.1 Ratings'
+
+    # save all parameter values, if requested
+    if save_every_param:
+        click.echo(f"Saving every parameter back to '{params_file}'...", file=sys.stderr)
+        with click.open_file(params_file, mode='w', atomic=True) as yaml_file:
+            yaml.safe_dump(params, yaml_file, default_flow_style=False)
 
     # print parameters
     click.echo("Parameters:", file=sys.stderr)
