@@ -9,6 +9,7 @@ Jupyter Notebooks
 import json
 import pathlib     # file and path handling
 import sys
+from functools import reduce
 
 import numpy as np
 import scipy.stats
@@ -78,10 +79,13 @@ def bootstrap_dxy(df, n=5):
     return result
 
 
-def apply_stats_for_each_value(params, df, fmap, condition_names=None):
+def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=None):
     """Apply stats to each value in column"""
 
     all_count = df.shape[0]
+
+    if df_mask is not None:
+        df = df[df_mask]
 
     dff = pd.DataFrame({'E': df['E'], 'Y': df['Y'], 'agg': df.apply(fmap, axis=1)}).dropna()
     selected_count = dff.shape[0]
@@ -213,6 +217,8 @@ def f_map_generic(row, column_name, values_ranking_hash):
               help="Name of column with event time (with CVE lifetime) [default: 'cve_lifespan_commiter_time']")
 @click.option('--risk-column',
               help="Name of column with risk factor [default: 'CVSS v3.1 Ratings']")
+@click.option('--drop-if-true', '+d', multiple=True,
+              help="Drop rows where this boolean column evaluates to true")
 @click.option('--limit',
               type=click.IntRange(min=1),
               help="Use only first few rows for analysis [default: no limit]")
@@ -221,7 +227,8 @@ def f_map_generic(row, column_name, values_ranking_hash):
                 type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path))
 def main(params_file, save_params, save_every_param,
          confidence, bootstrap_samples,
-         lifetime_column, risk_column, limit,
+         lifetime_column, risk_column,
+         drop_if_true, limit,
          input_df):
     """CVE survival analysis script"""
     # processing options and arguments
@@ -252,6 +259,9 @@ def main(params_file, save_params, save_every_param,
     if risk_column is not None:
         params['cve_survival_analysis']['risk_column_name'] = risk_column
         params_changed = True
+    if drop_if_true:
+        params['cve_survival_analysis']['drop_if_true_column_names'] = drop_if_true
+        params_changed = True
     if limit is not None:
         params['cve_survival_analysis']['limit'] = limit
         params_changed = True
@@ -273,6 +283,8 @@ def main(params_file, save_params, save_every_param,
         params['cve_survival_analysis']['lifetime_column_name'] = 'cve_lifespan_commiter_time'
     if 'risk_column_name' not in params['cve_survival_analysis']:
         params['cve_survival_analysis']['risk_column_name'] = 'CVSS v3.1 Ratings'
+    if 'drop_if_true_column_names' not in params['cve_survival_analysis']:
+        params['cve_survival_analysis']['drop_if_true_column_names'] = []
 
     # save all parameter values, if requested
     if save_every_param:
@@ -289,6 +301,12 @@ def main(params_file, save_params, save_every_param,
                file=sys.stderr)
     click.echo(f"    - risk factor column name:  '{params['cve_survival_analysis']['risk_column_name']}'",
                file=sys.stderr)
+    if params['cve_survival_analysis']['drop_if_true_column_names']:
+        click.echo(f"    - drop rows from dataframe if any of the following "+
+                   f"{len(params['cve_survival_analysis']['drop_if_true_column_names'])} columns are true",
+                   file=sys.stderr)
+        for column_name in params['cve_survival_analysis']['drop_if_true_column_names']:
+            click.echo(f"        - '{column_name}'", file=sys.stderr)
     if 'limit' in params['cve_survival_analysis'] \
             and params['cve_survival_analysis']['limit'] is not None:
         click.echo(f"    - use only first rows: {params['cve_survival_analysis']['limit']}",
@@ -315,6 +333,21 @@ def main(params_file, save_params, save_every_param,
                    f"No '{params['risk_survival_analysis']['lifetime_column_name']}' column in dataframe!",
                    err=True)
         sys.exit(1)
+    if params['cve_survival_analysis']['drop_if_true_column_names']:
+        columns_error = False
+        for column_name in params['cve_survival_analysis']['drop_if_true_column_names']:
+            if column_name not in df.columns:
+                click.echo('\033[31m'+"ERROR"+'\033[39m'+": "+
+                           f"No '{column_name}' column in dataframe!",
+                           err=True)
+                columns_error = True
+            elif not pd.api.types.is_bool_dtype(df[column_name]):
+                click.echo("ERROR" + ": " +
+                           f"'{column_name}' column is not boolean, it is of {df.dtypes[column_name]} type",
+                           err=True)
+                columns_error = True
+        if columns_error:
+            sys.exit(2)
 
     # censoring and lifetime
     click.echo(f"Computing or extracting CVE lifetime "+
@@ -329,6 +362,18 @@ def main(params_file, save_params, save_every_param,
     #df.loc[censoring_mask,'E'] = False
     #click.echo(f"censored = {censoring_mask.sum()}; uncensored = {df['E'].sum()}; total = {df['E'].count()}",
     #           file=sys.stderr)
+
+    # dropping
+    df_mask = None
+    if params['cve_survival_analysis']['drop_if_true_column_names']:
+        df_mask = reduce(lambda col_a, col_b: col_a | col_b,
+                         [df[col] for col in params['cve_survival_analysis']['drop_if_true_column_names']])
+        to_drop = df_mask.sum()
+        df_mask = ~df_mask
+        click.echo(f"Kept {df_mask.sum()} elements, dropped {to_drop} out of {df_mask.count()} after drop-if-true",
+                   file=sys.stderr)
+        click.echo(f": drop-if-true: {params['cve_survival_analysis']['drop_if_true_column_names']}",
+                   file=sys.stderr)
 
     # TODO: pass names of columns, instead of creating new columns
     if params['cve_survival_analysis']['lifetime_column_name [days]'] in df.columns:
@@ -364,16 +409,16 @@ def main(params_file, save_params, save_every_param,
                    file=sys.stderr)
         measures, groups_df = \
             apply_stats_for_each_value(params, df[:params['cve_survival_analysis']['limit']],
-                                       f_map,
-                                       condition_names=condition_names_hash)
+                                       f_map, condition_names=condition_names_hash,
+                                       df_mask=df_mask)
     else:
         click.echo(f"Computing stats for all {df.shape[0]} elements," +
                    f" for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
                    file=sys.stderr)
         measures, groups_df = \
             apply_stats_for_each_value(params, df,
-                                       f_map,
-                                       condition_names=condition_names_hash)
+                                       f_map, condition_names=condition_names_hash,
+                                       df_mask=df_mask)
     click.echo("", file=sys.stderr)
     print(json.dumps(measures, indent=4))
     print(groups_df)
