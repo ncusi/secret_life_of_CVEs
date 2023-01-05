@@ -123,8 +123,17 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
     }
 
     click.echo("Computing descriptive statistics like mean, median, etc....", file=sys.stderr)
-    groups = dff.groupby(by=['agg'])['Y'].aggregate(['count', 'median', 'min', 'max', 'mean', 'std'])
+    dff_groupby_y =dff.groupby(by=['agg'])['Y']
+    groups = dff_groupby_y\
+        .agg(['count', 'median', 'min',
+              lambda x: np.percentile(x, q=25), lambda x: np.percentile(x, q=75),
+              'max', 'mean', 'std', 'skew'])\
+        .rename(columns={'<lambda_0>': '25%', '<lambda_1>': '75%'})
 
+    # DEBUG
+    #print(dff_groupby_y.describe())
+
+    groups.index.names = [params['cve_survival_analysis']['risk_column_name']]
     if condition_names:
         groups.index = groups.index.map(condition_names)
     # groups.columns = ['Number of patiets', 'Survival days, median', 'min', 'max', 'std']
