@@ -136,8 +136,11 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
     groups.index.names = [params['cve_survival_analysis']['risk_column_name']]
     if condition_names:
         groups.index = groups.index.map(condition_names)
-    # groups.columns = ['Number of patiets', 'Survival days, median', 'min', 'max', 'std']
 
+    return ret, groups, dff
+
+
+def plot_survival_function(params, dff, condition_names=None):
     # for value in dff["agg"].unique():
     #     mask = (dff["agg"] == value)
     #     time_cell, survival_prob_cell = kaplan_meier_estimator(dff["E"][mask], dff["Y"][mask])
@@ -149,7 +152,7 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
     # plt.legend(loc="best")
     # plt.show()
     # plt.clf()
-    return ret, groups
+    pass
 
 
 def create_values_ranking_list(column_s, column_dtype):
@@ -416,7 +419,7 @@ def main(params_file, save_params, save_every_param,
         click.echo(f"Computing stats for first {params['cve_survival_analysis']['limit']} elements,"+
                    f" for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
                    file=sys.stderr)
-        measures, groups_df = \
+        measures, groups_df, dff = \
             apply_stats_for_each_value(params, df[:params['cve_survival_analysis']['limit']],
                                        f_map, condition_names=condition_names_hash,
                                        df_mask=df_mask)
@@ -424,13 +427,14 @@ def main(params_file, save_params, save_every_param,
         click.echo(f"Computing stats for all {df.shape[0]} elements," +
                    f" for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
                    file=sys.stderr)
-        measures, groups_df = \
+        measures, groups_df, dff = \
             apply_stats_for_each_value(params, df,
                                        f_map, condition_names=condition_names_hash,
                                        df_mask=df_mask)
     click.echo("", file=sys.stderr)
     print(json.dumps(measures, indent=4))
     print(groups_df)
+    plot_survival_function(params, dff, condition_names=condition_names_hash)
 
 if __name__ == '__main__':
     # does not match signature because of @click decorations
