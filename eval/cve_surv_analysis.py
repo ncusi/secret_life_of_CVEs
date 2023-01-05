@@ -234,13 +234,16 @@ def f_map_generic(row, column_name, values_ranking_hash):
 @click.option('--limit',
               type=click.IntRange(min=1),
               help="Use only first few rows for analysis [default: no limit]")
+@click.option('--lifespan-max',
+              type=click.FloatRange(min=0.0),
+              help="Use only events where CVE lifespan in days is smaller than provided value")
 # Parquet file containing dataframe with data to do CVE survival analysis on
 @click.argument('input_df',
                 type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path))
 def main(params_file, save_params, save_every_param,
          confidence, bootstrap_samples,
          lifetime_column, risk_column,
-         drop_if_true, limit,
+         drop_if_true, limit, lifespan_max,
          input_df):
     """CVE survival analysis script"""
     # processing options and arguments
@@ -276,6 +279,9 @@ def main(params_file, save_params, save_every_param,
         params_changed = True
     if limit is not None:
         params['cve_survival_analysis']['limit'] = limit
+        params_changed = True
+    if lifespan_max is not None:
+        params['cve_survival_analysis']['lifespan_max'] = lifespan_max
         params_changed = True
 
     # possibly save parameters to parameters file
@@ -322,6 +328,11 @@ def main(params_file, save_params, save_every_param,
     if 'limit' in params['cve_survival_analysis'] \
             and params['cve_survival_analysis']['limit'] is not None:
         click.echo(f"    - use only first rows: {params['cve_survival_analysis']['limit']}",
+                   file=sys.stderr)
+    if 'lifespan_max' in params['cve_survival_analysis'] \
+            and params['cve_survival_analysis']['lifespan_max'] is not None:
+        click.echo(f"    - use only data with CVE lifespan"+
+                   f" < {params['cve_survival_analysis']['lifespan_max']} days",
                    file=sys.stderr)
     click.echo("", file=sys.stderr)
 
@@ -375,6 +386,12 @@ def main(params_file, save_params, save_every_param,
     #click.echo(f"censored = {censoring_mask.sum()}; uncensored = {df['E'].sum()}; total = {df['E'].count()}",
     #           file=sys.stderr)
 
+    # TODO: pass names of columns, instead of creating new columns
+    if params['cve_survival_analysis']['lifetime_column_name [days]'] in df.columns:
+        df['Y'] = df[params['cve_survival_analysis']['lifetime_column_name [days]']]
+    else:
+        df['Y'] = df[params['cve_survival_analysis']['lifetime_column_name']].dt.days
+
     # dropping
     df_mask = None
     if params['cve_survival_analysis']['drop_if_true_column_names']:
@@ -384,14 +401,16 @@ def main(params_file, save_params, save_every_param,
         df_mask = ~df_mask
         click.echo(f"Kept {df_mask.sum()} elements, dropped {to_drop} out of {df_mask.count()} after drop-if-true",
                    file=sys.stderr)
-        click.echo(f": drop-if-true: {params['cve_survival_analysis']['drop_if_true_column_names']}",
+        click.echo(f"* drop-if-true: {params['cve_survival_analysis']['drop_if_true_column_names']}",
                    file=sys.stderr)
-
-    # TODO: pass names of columns, instead of creating new columns
-    if params['cve_survival_analysis']['lifetime_column_name [days]'] in df.columns:
-        df['Y'] = df[params['cve_survival_analysis']['lifetime_column_name [days]']]
-    else:
-        df['Y'] = df[params['cve_survival_analysis']['lifetime_column_name']].dt.days
+    if params['cve_survival_analysis']['lifespan_max'] is not None:
+        lifespan_mask = df['Y'] < params['cve_survival_analysis']['lifespan_max']
+        click.echo(f"Limiting lifespan to < {params['cve_survival_analysis']['lifespan_max']} days"+
+                   f" kept {lifespan_mask.sum()} out of {lifespan_mask.count()} rows", file=sys.stderr)
+        if df_mask is not None:
+            df_mask &= lifespan_mask
+        else:
+            df_mask = lifespan_mask
 
     # f_map and ranking names
     condition_names_hash = None
