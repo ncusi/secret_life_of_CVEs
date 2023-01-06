@@ -452,6 +452,8 @@ def main(params_file, save_params, save_every_param,
     # f_map and ranking names
     condition_names_hash = None
     f_map = None
+    values_list = None
+    # TODO: move handling integer-valued risk column first, and use `--value`s as descriptions
     if 'values_ranking' in params['cve_survival_analysis'] \
             and params['cve_survival_analysis']['values_ranking']:
         values_list = uniquify(params['cve_survival_analysis']['values_ranking'])
