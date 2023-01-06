@@ -262,6 +262,10 @@ def uniquify(param):
 @click.option('--lifespan-max',
               type=click.FloatRange(min=0.0),
               help="Use only events where CVE lifespan in days is smaller than provided value")
+@click.option('--lifespan-min',
+              type=click.FloatRange(min=0.0),
+              help="Use only events where CVE lifespan in days is larger than provided value"+
+                   " (ignored if larger than lifespan_max, if the latter is provided)")
 # where to put output files
 # NOTE: for no value to mean no output, there cannot be default value
 @click.option('--eval-path',
@@ -275,7 +279,7 @@ def main(params_file, save_params, save_every_param,
          confidence, bootstrap_samples,
          lifetime_column, risk_column,
          drop_if_true, value,
-         limit, lifespan_max,
+         limit, lifespan_max, lifespan_min,
          eval_path,
          input_df):
     """CVE survival analysis script"""
@@ -293,6 +297,12 @@ def main(params_file, save_params, save_every_param,
         # maybe https://stackoverflow.com/questions/651794/whats-the-best-way-to-initialize-a-dict-of-dicts-in-python
         # to avoid `'foo' in d and d['foo'] is not None` code
         params['cve_survival_analysis'] = {}
+
+    # sanity check of --lifespan-min
+    if lifespan_max is not None and lifespan_min is not None and lifespan_min >= lifespan_max:
+        click.echo(f"Value of --lifespan-min {lifespan_min} >= {lifespan_max} --lifespan-max! Ignoring.",
+                   err=True)
+        lifespan_min = None
 
     # override values in parameters file with options
     if description is not None:
@@ -322,9 +332,20 @@ def main(params_file, save_params, save_every_param,
     if lifespan_max is not None:
         params['cve_survival_analysis']['lifespan_max'] = lifespan_max
         params_changed = True
+    if lifespan_min is not None:
+        params['cve_survival_analysis']['lifespan_min'] = lifespan_min
+        params_changed = True
     if eval_path is not None:
         params['eval_path'] = eval_path
         params_changed = True
+
+    # sanity check of lifespan_min (possibly from parameters file)
+    if 'lifespan_min' in params['cve_survival_analysis'] and 'lifespan_max' in params['cve_survival_analysis'] \
+        and params['cve_survival_analysis']['lifespan_min'] >= params['cve_survival_analysis']['lifespan_max']:
+        click.echo(f"Value of lifespan_min {params['cve_survival_analysis']['lifespan_min']} >= "+
+                   f"{params['cve_survival_analysis']['lifespan_max']} lifespan_max! Deleting.",
+                   err=True)
+        del params['cve_survival_analysis']['lifespan_min']
 
     # possibly save parameters to parameters file
     if params_changed:
@@ -387,6 +408,11 @@ def main(params_file, save_params, save_every_param,
             and params['cve_survival_analysis']['lifespan_max'] is not None:
         click.echo(f"    - use only data with CVE lifespan"+
                    f" < {params['cve_survival_analysis']['lifespan_max']} days",
+                   file=sys.stderr)
+    if 'lifespan_min' in params['cve_survival_analysis'] \
+            and params['cve_survival_analysis']['lifespan_min'] is not None:
+        click.echo(f"    - use only data with CVE lifespan"+
+                   f" > {params['cve_survival_analysis']['lifespan_min']} days",
                    file=sys.stderr)
     click.echo("", file=sys.stderr)
 
@@ -461,6 +487,15 @@ def main(params_file, save_params, save_every_param,
             and params['cve_survival_analysis']['lifespan_max'] is not None:
         lifespan_mask = df['Y'] < params['cve_survival_analysis']['lifespan_max']
         click.echo(f"Limiting lifespan to < {params['cve_survival_analysis']['lifespan_max']} days"+
+                   f" kept {lifespan_mask.sum()} out of {lifespan_mask.count()} rows", file=sys.stderr)
+        if df_mask is not None:
+            df_mask &= lifespan_mask
+        else:
+            df_mask = lifespan_mask
+    if 'lifespan_min' in params['cve_survival_analysis'] \
+            and params['cve_survival_analysis']['lifespan_min'] is not None:
+        lifespan_mask = df['Y'] > params['cve_survival_analysis']['lifespan_min']
+        click.echo(f"Limiting lifespan to > {params['cve_survival_analysis']['lifespan_min']} days"+
                    f" kept {lifespan_mask.sum()} out of {lifespan_mask.count()} rows", file=sys.stderr)
         if df_mask is not None:
             df_mask &= lifespan_mask
