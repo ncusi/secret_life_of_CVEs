@@ -23,7 +23,7 @@ def main():
 
     cleaned_df = pd.read_parquet(cleaned_df_filename)
     cve_lifespans_language_df, cve_lifespans_df = prepare_cve_lifespans_with_language_classes_df(cleaned_df,
-                                                                                            language_to_class_dict)
+                                                                                                 language_to_class_dict)
     cve_lifespans_language_df.to_parquet(cve_lifespan_language_df_filename)
     cve_lifespans_df.to_parquet(cve_lifespan_df_filename)
 
@@ -53,9 +53,12 @@ def prepare_cve_lifespans_with_language_classes_df(cleaned_df, language_to_class
                                                                     language_to_class_dict)
 
     projects_cve_lifespan_embargo_most_used_language_df['most_common_language'] = \
-    projects_cve_lifespan_embargo_most_used_language_df[language_columns].idxmax(axis=1)
+        projects_cve_lifespan_embargo_most_used_language_df[language_columns].idxmax(axis=1)
+    projects_cve_lifespan_embargo_most_used_language_df['most_common_language_number_of_files'] = \
+        projects_cve_lifespan_embargo_most_used_language_df[language_columns].max(axis=1)
     projects_cve_lifespan_embargo_most_used_language_df.drop(columns=language_columns, inplace=True)
-    cve_lifespans_df = assign_programming_language_class(projects_cve_lifespan_embargo_most_used_language_df, language_to_class_dict)
+    cve_lifespans_df = assign_programming_language_class(projects_cve_lifespan_embargo_most_used_language_df,
+                                                         language_to_class_dict)
 
     return cve_lifespans_language_df, cve_lifespans_df
 
@@ -102,7 +105,6 @@ def calculate_embargo(df):
 
 
 def assign_programming_language_classes(df, language_to_class_dict):
-    language_columns = language_to_class_dict['language_columns']
     programming_paradigm = language_to_class_dict['programming_paradigm']
     compilation_class = language_to_class_dict['compilation_class']
     type_class = language_to_class_dict['type_class']
@@ -110,19 +112,18 @@ def assign_programming_language_classes(df, language_to_class_dict):
     extended_programming_paradigm = language_to_class_dict['extended_programming_paradigm']
 
     df.replace(0, np.nan, inplace=True)
-    df[language_columns] = df[language_columns].where(pd.isna, language_columns, axis=1)
     cve_lifespans_language_df = df.melt(id_vars=['commit_cves', 'project_names',
                                                  'cve_lifespan_commiter_time', 'cve_lifespan_author_time',
                                                  'embargo_min', 'embargo_max']).dropna()
-    cve_lifespans_language_df['programming_paradigm'] = cve_lifespans_language_df['value'] \
+    cve_lifespans_language_df['programming_paradigm'] = cve_lifespans_language_df['variable'] \
         .apply(lambda language: programming_paradigm[language])
-    cve_lifespans_language_df['compilation_class'] = cve_lifespans_language_df['value'] \
+    cve_lifespans_language_df['compilation_class'] = cve_lifespans_language_df['variable'] \
         .apply(lambda language: compilation_class[language])
-    cve_lifespans_language_df['type_class'] = cve_lifespans_language_df['value'] \
+    cve_lifespans_language_df['type_class'] = cve_lifespans_language_df['variable'] \
         .apply(lambda language: type_class[language])
-    cve_lifespans_language_df['memory_model'] = cve_lifespans_language_df['value'] \
+    cve_lifespans_language_df['memory_model'] = cve_lifespans_language_df['variable'] \
         .apply(lambda language: memory_model[language])
-    cve_lifespans_language_df['extended_programming_paradigm'] = cve_lifespans_language_df['value'] \
+    cve_lifespans_language_df['extended_programming_paradigm'] = cve_lifespans_language_df['variable'] \
         .apply(lambda language: extended_programming_paradigm[language])
     return cve_lifespans_language_df
 
