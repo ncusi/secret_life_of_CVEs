@@ -204,6 +204,17 @@ def f_map_generic(row, column_name, values_ranking_hash):
     return None
 
 
+def uniquify(param):
+    seen = set()
+    uniq = []
+    for elem in param:
+        if elem not in seen:
+            uniq.append(elem)
+            seen.add(elem)
+
+    return uniq
+
+
 @click.command()
 # parameters file (for DVC use), and whether it is auto-saved
 # see e.g. https://dvc.org/doc/command-reference/params
@@ -430,11 +441,14 @@ def main(params_file, save_params, save_every_param,
     f_map = None
     if 'values_ranking' in params['cve_survival_analysis'] \
             and params['cve_survival_analysis']['values_ranking']:
-        values_list = params['cve_survival_analysis']['values_ranking']
+        values_list = uniquify(params['cve_survival_analysis']['values_ranking'])
         values_hash, condition_names_hash = values_ranking_hashes(values_list)
 
         f_map = lambda row: f_map_generic(row, params['cve_survival_analysis']['risk_column_name'],
                                           values_hash)
+
+        if len(values_list) < len(params['cve_survival_analysis']['values_ranking']):
+            click.echo("WARNING: some of risk values were provided more than once!", err=True)
     elif pd.api.types.is_integer_dtype(df.dtypes[params['cve_survival_analysis']['risk_column_name']]):
         f_map = lambda row: f_map_int(row, params['cve_survival_analysis']['risk_column_name'])
         click.echo(f"risk column is integer valued: {df.dtypes[params['cve_survival_analysis']['risk_column_name']]}",
