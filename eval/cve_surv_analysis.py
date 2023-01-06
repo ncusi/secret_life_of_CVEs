@@ -414,6 +414,7 @@ def main(params_file, save_params, save_every_param,
 
     # f_map and ranking names
     condition_names_hash = None
+    f_map = None
     if pd.api.types.is_integer_dtype(df.dtypes[params['cve_survival_analysis']['risk_column_name']]):
         f_map = lambda row: f_map_int(row, params['cve_survival_analysis']['risk_column_name'])
         click.echo(f"risk column is integer valued: {df.dtypes[params['cve_survival_analysis']['risk_column_name']]}",
@@ -422,16 +423,28 @@ def main(params_file, save_params, save_every_param,
         values_list = create_values_ranking_list(df[params['cve_survival_analysis']['risk_column_name']],
                                                  df.dtypes[params['cve_survival_analysis']['risk_column_name']])
         click.echo(f"risk column values, ordered = {values_list}", file=sys.stderr)
-        values_hash, condition_names_hash = values_ranking_hashes(values_list)
-        click.echo(f"risk column values hash = {values_hash}", file=sys.stderr)
-        click.echo(f"condition names hash    = {condition_names_hash}", file=sys.stderr)
+        if values_list:
+            values_hash, condition_names_hash = values_ranking_hashes(values_list)
+            click.echo(f"risk column values hash = {values_hash}", file=sys.stderr)
+            click.echo(f"condition names hash    = {condition_names_hash}", file=sys.stderr)
 
-        f_map = lambda row: f_map_generic(row, params['cve_survival_analysis']['risk_column_name'],
-                                          values_hash)
+            f_map = lambda row: f_map_generic(row, params['cve_survival_analysis']['risk_column_name'],
+                                              values_hash)
+        else:
+            click.echo(f"No good ordering for '{params['cve_survival_analysis']['risk_column_name']}' column "+
+                       f"of '{df.dtypes[params['cve_survival_analysis']['risk_column_name']]}' type",
+                       file=sys.stderr)
 
     click.echo(f"risk column values, unordered = " +
                f"{df[params['cve_survival_analysis']['risk_column_name']].unique()};",
                file=sys.stderr)
+
+    # do we have ranking?
+    if f_map is None:
+        click.echo('\033[31m'+"ERROR"+'\033[39m'+": "+
+                   "No ranking provided or found for risk column",
+                   err=True)
+        sys.exit(3)
 
     if 'limit' in params['cve_survival_analysis'] \
             and params['cve_survival_analysis']['limit'] is not None:
