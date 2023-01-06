@@ -135,7 +135,7 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
     # DEBUG
     #print(dff_groupby_y.describe())
 
-    groups.index.names = [params['cve_survival_analysis']['risk_column_name']]
+    groups.index.names = [ params['cve_survival_analysis']['risk_column_name'] ]
     if condition_names:
         groups.index = groups.index.map(condition_names)
 
@@ -152,6 +152,7 @@ def plot_survival_function(params, plot_path, dff, condition_names=None):
                        "%d (n = %d)" % (value, mask.sum())
                  )
 
+    plt.title(f"Risk factor: '{params['cve_survival_analysis']['risk_column_name']}'")
     plt.ylabel("est. probability of survival $\\hat{S}(t)$")
     plt.xlabel("time $t$")
     plt.legend(loc="best")
