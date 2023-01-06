@@ -153,7 +153,9 @@ def plot_survival_function(params, plot_path, dff, condition_names=None):
                      f"{value:d} (n = {mask.sum():d})"
                  )
 
-    plt.title(f"Risk factor: '{params['cve_survival_analysis']['risk_column_name']}'")
+    plt.suptitle(f"Risk factor: '{params['cve_survival_analysis']['risk_column_name']}'")
+    if 'description' in params:
+        plt.title(params['description'])
     plt.ylabel("est. probability of survival $\\hat{S}(t)$")
     plt.xlabel("time $t$")
     plt.legend(loc="best")
@@ -237,6 +239,8 @@ def uniquify(param):
               is_flag=True, type=bool, default=False,
               help='Save every parameter value (including default values) in the parameters file')
 # parameters that can also be found in parameters file
+@click.option('--description', type=str,
+              help='Description of this particular set of parameters (used as subtitle for plots)')
 @click.option('--confidence',
               # could use `max_open=True`, but then `clamp=True` cannot be used
               type=click.FloatRange(min=0.0, max=1.0, clamp=True),
@@ -267,6 +271,7 @@ def uniquify(param):
 @click.argument('input_df',
                 type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path))
 def main(params_file, save_params, save_every_param,
+         description,
          confidence, bootstrap_samples,
          lifetime_column, risk_column,
          drop_if_true, value,
@@ -290,6 +295,9 @@ def main(params_file, save_params, save_every_param,
         params['cve_survival_analysis'] = {}
 
     # override values in parameters file with options
+    if description is not None:
+        params['description'] = description
+        params_changed = True
     if confidence is not None:
         params['confidence'] = confidence
         params_changed = True
@@ -348,8 +356,10 @@ def main(params_file, save_params, save_every_param,
 
     # print parameters
     click.echo("Parameters:", file=sys.stderr)
+    if 'description' in params:
+        click.echo(f"- description: {params['description']}", file=sys.stderr)
     if 'eval_path' in params:
-        click.echo(f"- eval path: '{params['eval_path']}' = '{params['eval_path'].absolute()}'")
+        click.echo(f"- eval path: '{params['eval_path']}' = '{params['eval_path'].absolute()}'", file=sys.stderr)
     click.echo(f"- confidence: {params['confidence']}", file=sys.stderr)
     click.echo(f"- bootstrap samples (n): {params['bootstrap_samples']}", file=sys.stderr)
     click.echo("- CVE survival analysis:", file=sys.stderr)
