@@ -147,9 +147,10 @@ def plot_survival_function(params, plot_path, dff, condition_names=None):
         mask = (dff["agg"] == value)
         time_cell, survival_prob_cell = kaplan_meier_estimator(dff["E"][mask], dff["Y"][mask])
         plt.step(time_cell, survival_prob_cell, where="post",
-                 label="%s (n = %d)" % (condition_names[value], mask.sum()) \
+                 label=\
+                     f"{condition_names[value]} (n = {mask.sum():d})" \
                      if condition_names else \
-                       "%d (n = %d)" % (value, mask.sum())
+                     f"{value:d} (n = {mask.sum():d})"
                  )
 
     plt.title(f"Risk factor: '{params['cve_survival_analysis']['risk_column_name']}'")
