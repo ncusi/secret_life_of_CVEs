@@ -16,6 +16,8 @@ import scipy.stats
 import pandas as pd
 from joblib import Parallel, delayed
 from lifelines.utils import concordance_index
+from matplotlib import pyplot as plt
+from sksurv.nonparametric import kaplan_meier_estimator
 from tqdm import tqdm
 import yaml        # for simple YAML format handling
 import click       # command line parsing
@@ -140,18 +142,22 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
     return ret, groups, dff
 
 
-def plot_survival_function(params, dff, condition_names=None):
-    # for value in dff["agg"].unique():
-    #     mask = (dff["agg"] == value)
-    #     time_cell, survival_prob_cell = kaplan_meier_estimator(dff["E"][mask], dff["Y"][mask])
-    #     plt.step(time_cell, survival_prob_cell, where="post",
-    #              label="%s (n = %d)" % (condition_names[value], mask.sum()))
-    #
-    # plt.ylabel("est. probability of survival $\hat{S}(t)$")
-    # plt.xlabel("time $t$")
-    # plt.legend(loc="best")
+def plot_survival_function(params, plot_path, dff, condition_names=None):
+    for value in dff["agg"].unique():
+        mask = (dff["agg"] == value)
+        time_cell, survival_prob_cell = kaplan_meier_estimator(dff["E"][mask], dff["Y"][mask])
+        plt.step(time_cell, survival_prob_cell, where="post",
+                 label="%s (n = %d)" % (condition_names[value], mask.sum()) \
+                     if condition_names else \
+                       "%d (n = %d)" % (value, mask.sum())
+                 )
+
+    plt.ylabel("est. probability of survival $\\hat{S}(t)$")
+    plt.xlabel("time $t$")
+    plt.legend(loc="best")
     # plt.show()
-    # plt.clf()
+    plt.savefig(plot_path)
+    plt.clf()
     pass
 
 
@@ -534,7 +540,8 @@ def main(params_file, save_params, save_every_param,
         with eval_path.joinpath('cve_surv_metrics.json').open('w') as json_file:
             json.dump(measures, json_file, indent=4)
         groups_df.to_csv(eval_path / 'cve_surv_statistics.csv', index=True)
-        plot_survival_function(params, dff, condition_names=condition_names_hash)
+        plot_survival_function(params, eval_path / 'cve_survival_function.png',
+                               dff, condition_names=condition_names_hash)
 
 if __name__ == '__main__':
     # does not match signature because of @click decorations
