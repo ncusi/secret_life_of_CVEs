@@ -231,6 +231,8 @@ def f_map_generic(row, column_name, values_ranking_hash):
               help="Name of column with risk factor [default: 'CVSS v3.1 Ratings']")
 @click.option('--drop-if-true', '+d', multiple=True,
               help="Drop rows where this boolean column evaluates to true")
+@click.option('--value', multiple=True,
+              help="Provide risk column values of interest, in ranking order")
 @click.option('--limit',
               type=click.IntRange(min=1),
               help="Use only first few rows for analysis [default: no limit]")
@@ -243,7 +245,8 @@ def f_map_generic(row, column_name, values_ranking_hash):
 def main(params_file, save_params, save_every_param,
          confidence, bootstrap_samples,
          lifetime_column, risk_column,
-         drop_if_true, limit, lifespan_max,
+         drop_if_true, value,
+         limit, lifespan_max,
          input_df):
     """CVE survival analysis script"""
     # processing options and arguments
@@ -276,6 +279,9 @@ def main(params_file, save_params, save_every_param,
         params_changed = True
     if drop_if_true:
         params['cve_survival_analysis']['drop_if_true_column_names'] = drop_if_true
+        params_changed = True
+    if value:
+        params['cve_survival_analysis']['values_ranking'] = value
         params_changed = True
     if limit is not None:
         params['cve_survival_analysis']['limit'] = limit
@@ -319,6 +325,12 @@ def main(params_file, save_params, save_every_param,
                file=sys.stderr)
     click.echo(f"    - risk factor column name:  '{params['cve_survival_analysis']['risk_column_name']}'",
                file=sys.stderr)
+    if 'values_ranking' in params['cve_survival_analysis'] \
+            and params['cve_survival_analysis']['values_ranking']:
+        click.echo(f"    - ranking of values ({len(params['cve_survival_analysis']['values_ranking'])} values):",
+                   file=sys.stderr)
+        for idx, val in enumerate(params['cve_survival_analysis']['values_ranking']):
+            click.echo(f"        {idx:2d}: {val}", file=sys.stderr)
     if params['cve_survival_analysis']['drop_if_true_column_names']:
         click.echo(f"    - drop rows from dataframe if any of the following "+
                    f"{len(params['cve_survival_analysis']['drop_if_true_column_names'])} columns are true",
@@ -403,7 +415,8 @@ def main(params_file, save_params, save_every_param,
                    file=sys.stderr)
         click.echo(f"* drop-if-true: {params['cve_survival_analysis']['drop_if_true_column_names']}",
                    file=sys.stderr)
-    if params['cve_survival_analysis']['lifespan_max'] is not None:
+    if 'lifespan_max' in params['cve_survival_analysis'] \
+            and params['cve_survival_analysis']['lifespan_max'] is not None:
         lifespan_mask = df['Y'] < params['cve_survival_analysis']['lifespan_max']
         click.echo(f"Limiting lifespan to < {params['cve_survival_analysis']['lifespan_max']} days"+
                    f" kept {lifespan_mask.sum()} out of {lifespan_mask.count()} rows", file=sys.stderr)
@@ -415,7 +428,14 @@ def main(params_file, save_params, save_every_param,
     # f_map and ranking names
     condition_names_hash = None
     f_map = None
-    if pd.api.types.is_integer_dtype(df.dtypes[params['cve_survival_analysis']['risk_column_name']]):
+    if 'values_ranking' in params['cve_survival_analysis'] \
+            and params['cve_survival_analysis']['values_ranking']:
+        values_list = params['cve_survival_analysis']['values_ranking']
+        values_hash, condition_names_hash = values_ranking_hashes(values_list)
+
+        f_map = lambda row: f_map_generic(row, params['cve_survival_analysis']['risk_column_name'],
+                                          values_hash)
+    elif pd.api.types.is_integer_dtype(df.dtypes[params['cve_survival_analysis']['risk_column_name']]):
         f_map = lambda row: f_map_int(row, params['cve_survival_analysis']['risk_column_name'])
         click.echo(f"risk column is integer valued: {df.dtypes[params['cve_survival_analysis']['risk_column_name']]}",
                    file=sys.stderr)
@@ -435,9 +455,15 @@ def main(params_file, save_params, save_every_param,
                        f"of '{df.dtypes[params['cve_survival_analysis']['risk_column_name']]}' type",
                        file=sys.stderr)
 
-    click.echo(f"risk column values, unordered = " +
-               f"{df[params['cve_survival_analysis']['risk_column_name']].unique()};",
+    unique_values = df[params['cve_survival_analysis']['risk_column_name']].unique()
+    click.echo(f"risk column values, unordered = {unique_values};",
                file=sys.stderr)
+    # sanity check, with warning
+    if values_list:
+        unique_values_set = set(unique_values.tolist())
+        for val in values_list:
+            if val not in unique_values_set:
+                click.echo(f"- {val} not in risk column values!", err=True)
 
     # do we have ranking?
     if f_map is None:
