@@ -539,6 +539,16 @@ def main(params_file, save_params, save_every_param,
             yaml.safe_dump(params, yaml_file, default_flow_style=False)
         with eval_path.joinpath('cve_surv_metrics.json').open('w') as json_file:
             json.dump(measures, json_file, indent=4)
+        pd.DataFrame({
+            'Number of patients': measures['Number of patients'],
+            '% of cohort': measures['% of cohort'],
+            'Dxy': measures['bootstrap']['Dxy'],
+            f"Confidence interval {measures['bootstrap']['confidence threshold %']}% low":
+                measures['bootstrap']['Confidence interval low'],
+            f"Confidence interval {measures['bootstrap']['confidence threshold %']}% high":
+                measures['bootstrap']['Confidence interval high'],
+        }, index=[ params['cve_survival_analysis']['risk_column_name'] ])\
+            .to_csv(eval_path / 'cve_surv_group_metrics.csv', index=True)
         groups_df.to_csv(eval_path / 'cve_surv_statistics.csv', index=True)
         plot_survival_function(params, eval_path / 'cve_survival_function.png',
                                dff, condition_names=condition_names_hash)
