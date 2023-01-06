@@ -250,6 +250,11 @@ def uniquify(param):
 @click.option('--lifespan-max',
               type=click.FloatRange(min=0.0),
               help="Use only events where CVE lifespan in days is smaller than provided value")
+# where to put output files
+# NOTE: for no value to mean no output, there cannot be default value
+@click.option('--eval-path',
+              type=click.Path(dir_okay=True, file_okay=False, path_type=pathlib.Path),
+              help='Directory where to save plots, metrics, and other output files')
 # Parquet file containing dataframe with data to do CVE survival analysis on
 @click.argument('input_df',
                 type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path))
@@ -258,6 +263,7 @@ def main(params_file, save_params, save_every_param,
          lifetime_column, risk_column,
          drop_if_true, value,
          limit, lifespan_max,
+         eval_path,
          input_df):
     """CVE survival analysis script"""
     # processing options and arguments
@@ -300,6 +306,9 @@ def main(params_file, save_params, save_every_param,
     if lifespan_max is not None:
         params['cve_survival_analysis']['lifespan_max'] = lifespan_max
         params_changed = True
+    if eval_path is not None:
+        params['eval_path'] = eval_path
+        params_changed = True
 
     # possibly save parameters to parameters file
     if params_changed:
@@ -327,8 +336,12 @@ def main(params_file, save_params, save_every_param,
         with click.open_file(params_file, mode='w', atomic=True) as yaml_file:
             yaml.safe_dump(params, yaml_file, default_flow_style=False)
 
+    # TODO?: use local variables in place of `params` hash for shorter code
+
     # print parameters
     click.echo("Parameters:", file=sys.stderr)
+    if 'eval_path' in params:
+        click.echo(f"- eval path: '{params['eval_path']}' = '{params['eval_path'].absolute()}'")
     click.echo(f"- confidence: {params['confidence']}", file=sys.stderr)
     click.echo(f"- bootstrap samples (n): {params['bootstrap_samples']}", file=sys.stderr)
     click.echo("- CVE survival analysis:", file=sys.stderr)
@@ -506,7 +519,20 @@ def main(params_file, save_params, save_every_param,
     click.echo("", file=sys.stderr)
     print(json.dumps(measures, indent=4))
     print(groups_df)
-    plot_survival_function(params, dff, condition_names=condition_names_hash)
+    if 'eval_path' in params:
+        eval_path = params['eval_path']
+        # ensure that directory exists
+        eval_path.mkdir(parents=True, exist_ok=True)
+
+        # save metrics, statistics, and plots
+        click.echo(f"Saving output files to '{eval_path}/' directory...", file=sys.stderr)
+        params['eval_path'] = str(params['eval_path']) # Path to string
+        with eval_path.joinpath('cve_surv_params.yaml').open('w') as yaml_file:
+            yaml.safe_dump(params, yaml_file, default_flow_style=False)
+        with eval_path.joinpath('cve_surv_metrics.json').open('w') as json_file:
+            json.dump(measures, json_file, indent=4)
+        groups_df.to_csv(eval_path / 'cve_surv_statistics.csv', index=True)
+        plot_survival_function(params, dff, condition_names=condition_names_hash)
 
 if __name__ == '__main__':
     # does not match signature because of @click decorations
