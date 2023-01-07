@@ -80,6 +80,26 @@ def add_cvss_rankings(df):
     return df
 
 
+def make_columns_categorical_sorted(df):
+    df['access.authentication'] = df['access.authentication'].astype(
+        pd.CategoricalDtype(categories=['NONE', 'SINGLE', 'MULTIPLE'], ordered=True)
+    )
+    df['access.complexity'] = df['access.complexity'].astype(
+        pd.CategoricalDtype(categories=['LOW', 'MEDIUM', 'HIGH'], ordered=True)
+    )
+    df['access.vector'] = df['access.vector'].astype(
+        pd.CategoricalDtype(categories=['LOCAL', 'ADJACENT_NETWORK', 'NETWORK'], ordered=True)
+    )
+
+    impact_dtype = \
+        pd.CategoricalDtype(categories=['NONE', 'PARTIAL', 'COMPLETE'], ordered=True)
+    df['impact.availability'] = df['impact.availability'].astype(impact_dtype)
+    df['impact.confidentiality'] = df['impact.confidentiality'].astype(impact_dtype)
+    df['impact.integrity'] = df['impact.integrity'].astype(impact_dtype)
+
+    return df
+
+
 # MAYBE: move to argparse or click library for parsing command line parameters
 # https://docs.python.org/3/library/argparse.html
 # https://click.palletsprojects.com/
@@ -104,6 +124,7 @@ def main():
 
     print(f"Adding CVSS Rankings to DataFrame...", file=sys.stderr)
     df = add_cvss_rankings(df)
+    df = make_columns_categorical_sorted(df)
 
     print(f"Saving DataFrame to '{out_df_filename}'...", file=sys.stderr)
     df.to_parquet(out_df_filename)
