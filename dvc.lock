@@ -63,15 +63,15 @@ stages:
       data/unique_cve_info-cvss_cwe_ranking_etc.parquet
     deps:
     - path: cve_information/add_cvss_ranking.py
-      md5: d02b54caec5c21431f6a1d9921527ee4
-      size: 3434
+      md5: 2a6c2aaae82a0f4b77fc14f23fe43b50
+      size: 4346
     - path: data/unique_cve_info-cvss_cwe_etc.parquet
       md5: 11d3d0ba71838bf742de7d766c736aa1
       size: 869228
     outs:
     - path: data/unique_cve_info-cvss_cwe_ranking_etc.parquet
-      md5: 338c991c34b7432414cb5f70046a8b7e
-      size: 916419
+      md5: 2fd6b6671e1c0b8c8c93049d58b294d4
+      size: 917236
   extension_to_language:
     cmd: python3 dependency_search/prepare_extension_to_language_dict.py data/extension_to_language.json
     deps:
@@ -157,12 +157,12 @@ stages:
       md5: bf04d21872b533171dbaaba9d9491a88
       size: 9253109
     - path: data/unique_cve_info-cvss_cwe_ranking_etc.parquet
-      md5: 338c991c34b7432414cb5f70046a8b7e
-      size: 916419
+      md5: 2fd6b6671e1c0b8c8c93049d58b294d4
+      size: 917236
     - path: dependency_search/merge_cve_info_and_cve_lifespan.py
       md5: c6a6886638f7189c78cbd1c3e2a9bffb
       size: 1167
     outs:
     - path: data/cve_survival_input_df
-      md5: fca21a6a3d12846e6627b6e01826f12a
-      size: 5903380
+      md5: bf05753e94f1c21805d3d4b90a503703
+      size: 5903827
