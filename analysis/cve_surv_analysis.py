@@ -206,6 +206,11 @@ def f_map_int(row, column_name, min_value=None, max_value=None):
     return value
 
 
+def f_map_bool(row, column_name):
+    value = bool(row[column_name])
+    return value
+
+
 def f_map_generic(row, column_name, values_ranking_hash):
     value = row[column_name]
     if value in values_ranking_hash:
@@ -520,6 +525,10 @@ def main(params_file, save_params, save_every_param,
     elif pd.api.types.is_integer_dtype(df.dtypes[params['cve_survival_analysis']['risk_column_name']]):
         f_map = lambda row: f_map_int(row, params['cve_survival_analysis']['risk_column_name'])
         click.echo(f"risk column is integer valued: {df.dtypes[params['cve_survival_analysis']['risk_column_name']]}",
+                   file=sys.stderr)
+    elif pd.api.types.is_bool_dtype(df.dtypes[params['cve_survival_analysis']['risk_column_name']]):
+        f_map = lambda row: f_map_bool(row, params['cve_survival_analysis']['risk_column_name'])
+        click.echo(f"risk column is bool valued: {df.dtypes[params['cve_survival_analysis']['risk_column_name']]}",
                    file=sys.stderr)
     else:
         values_list = create_values_ranking_list(df[params['cve_survival_analysis']['risk_column_name']],
