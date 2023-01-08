@@ -5,6 +5,15 @@
 
 Based on 'notebooks/surv_ana.ipynb' and 'notebooks/surv_clean_programming_classes.ipynb'
 Jupyter Notebooks
+
+TODO: --path-prefix (different experiments into different files)
+TODO: --no-header / --append for <metrics>.csv
+TODO: `dvc stage` and `dvc exp ...`
+TODO: docstrings with typing
+TODO: resolve problems from linter
+TODO: use mlflow / dvclive / dagshub API for saving metrics
+TODO: plot output as set of values (for dvc)
+TODO: other plots, and other ways of evaluating survival models
 """
 import json
 import pathlib     # file and path handling
