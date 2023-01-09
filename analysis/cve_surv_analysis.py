@@ -85,7 +85,7 @@ def bootstrap_dxy_inner(df):
 def bootstrap_dxy(df, n=5):
     """Boostrap and calculate Dxy, resampling `n` times"""
     # resample n times
-    result = Parallel(n_jobs=-1)(delayed(bootstrap_dxy_inner)(df) for i in range(n))
+    result = Parallel(n_jobs=-1)(delayed(bootstrap_dxy_inner)(df) for _ in range(n))
 
     return result
 
@@ -108,7 +108,7 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
 
     stats = dff['Y'].aggregate(['count', 'median'])
 
-    click.echo(f"Computing {params['bootstrap_samples']} × bootstrap Dxy "+
+    click.echo(f"Computing {params['bootstrap_samples']} × bootstrap Dxy " +
                f"for {dff.shape[0]} elements...", file=sys.stderr)
     dxy_bootstrapped = bootstrap_dxy(dff[['E', 'Y', 'agg']], params['bootstrap_samples'])
     # DEBUG
@@ -134,7 +134,7 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
     }
 
     click.echo("Computing descriptive statistics like mean, median, etc....", file=sys.stderr)
-    dff_groupby_y =dff.groupby(by=['agg'])['Y']
+    dff_groupby_y = dff.groupby(by=['agg'])['Y']
     groups = dff_groupby_y\
         .agg(['count', 'median', 'min',
               lambda x: np.percentile(x, q=25), lambda x: np.percentile(x, q=75),
@@ -152,14 +152,27 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
 
 
 def plot_survival_function(params, plot_path, dff, condition_names=None):
+    """Create plot of survival function and save it as PNG image
+
+    Parameters
+    ----------
+    params : dict
+        Uses params['cve_survival_analysis']['risk_column_name'] and
+        params['description'] to create plot titles
+    plot_path : str | pathlib.Path
+        Where to save the plot
+    dff : pandas.DataFrame
+        The dataframe with data to compute survival function from
+    condition_names : dict | None
+        Mapping from risk factor score to risk factor name
+    """
     for value in dff["agg"].unique():
-        mask = (dff["agg"] == value)
+        mask = (dff["agg"] == value)  # it's a boolean-valued pd.Series
         time_cell, survival_prob_cell = kaplan_meier_estimator(dff["E"][mask], dff["Y"][mask])
         plt.step(time_cell, survival_prob_cell, where="post",
-                 label=\
-                     f"{condition_names[value]} (n = {mask.sum():d})" \
-                     if condition_names else \
-                     f"{value:d} (n = {mask.sum():d})"
+                 label=f"{condition_names[value]} (n = {mask.sum():d})"
+                       if condition_names else
+                       f"{value:d} (n = {mask.sum():d})"
                  )
 
     plt.suptitle(f"Risk factor: '{params['cve_survival_analysis']['risk_column_name']}'")
@@ -171,7 +184,6 @@ def plot_survival_function(params, plot_path, dff, condition_names=None):
     # plt.show()
     plt.savefig(plot_path)
     plt.clf()
-    pass
 
 
 def create_values_ranking_list(column_s, column_dtype):
@@ -278,7 +290,7 @@ def uniquify(param):
               help="Use only events where CVE lifespan in days is smaller than provided value")
 @click.option('--lifespan-min',
               type=click.FloatRange(min=0.0),
-              help="Use only events where CVE lifespan in days is larger than provided value"+
+              help="Use only events where CVE lifespan in days is larger than provided value" +
                    " (ignored if larger than lifespan_max, if the latter is provided)")
 # where to put output files
 # NOTE: for no value to mean no output, there cannot be default value
@@ -354,9 +366,10 @@ def main(params_file, save_params, save_every_param,
         params_changed = True
 
     # sanity check of lifespan_min (possibly from parameters file)
-    if 'lifespan_min' in params['cve_survival_analysis'] and 'lifespan_max' in params['cve_survival_analysis'] \
-        and params['cve_survival_analysis']['lifespan_min'] >= params['cve_survival_analysis']['lifespan_max']:
-        click.echo(f"Value of lifespan_min {params['cve_survival_analysis']['lifespan_min']} >= "+
+    if 'lifespan_min' in params['cve_survival_analysis'] \
+            and 'lifespan_max' in params['cve_survival_analysis'] \
+            and params['cve_survival_analysis']['lifespan_min'] >= params['cve_survival_analysis']['lifespan_max']:
+        click.echo(f"Value of lifespan_min {params['cve_survival_analysis']['lifespan_min']} >= " +
                    f"{params['cve_survival_analysis']['lifespan_max']} lifespan_max! Deleting.",
                    err=True)
         del params['cve_survival_analysis']['lifespan_min']
@@ -409,7 +422,7 @@ def main(params_file, save_params, save_every_param,
         for idx, val in enumerate(params['cve_survival_analysis']['values_ranking']):
             click.echo(f"        {idx:2d}: {val}", file=sys.stderr)
     if params['cve_survival_analysis']['drop_if_true_column_names']:
-        click.echo(f"    - drop rows from dataframe if any of the following "+
+        click.echo(f"    - drop rows from dataframe if any of the following " +
                    f"{len(params['cve_survival_analysis']['drop_if_true_column_names'])} columns are true",
                    file=sys.stderr)
         for column_name in params['cve_survival_analysis']['drop_if_true_column_names']:
@@ -420,12 +433,12 @@ def main(params_file, save_params, save_every_param,
                    file=sys.stderr)
     if 'lifespan_max' in params['cve_survival_analysis'] \
             and params['cve_survival_analysis']['lifespan_max'] is not None:
-        click.echo(f"    - use only data with CVE lifespan"+
+        click.echo(f"    - use only data with CVE lifespan" +
                    f" < {params['cve_survival_analysis']['lifespan_max']} days",
                    file=sys.stderr)
     if 'lifespan_min' in params['cve_survival_analysis'] \
             and params['cve_survival_analysis']['lifespan_min'] is not None:
-        click.echo(f"    - use only data with CVE lifespan"+
+        click.echo(f"    - use only data with CVE lifespan" +
                    f" > {params['cve_survival_analysis']['lifespan_min']} days",
                    file=sys.stderr)
     click.echo("", file=sys.stderr)
@@ -441,12 +454,12 @@ def main(params_file, save_params, save_every_param,
 
     # sanity checking
     if params['cve_survival_analysis']['lifetime_column_name'] not in df.columns:
-        click.echo('\033[31m'+"ERROR"+'\033[39m'+": "+
+        click.echo('\033[31m'+"ERROR"+'\033[39m'+": " +
                    f"No '{params['cve_survival_analysis']['lifetime_column_name']}' column in dataframe!",
                    err=True)
         sys.exit(1)
     if params['cve_survival_analysis']['risk_column_name'] not in df.columns:
-        click.echo('\033[31m'+"ERROR"+'\033[39m'+": "+
+        click.echo('\033[31m'+"ERROR"+'\033[39m'+": " +
                    f"No '{params['risk_survival_analysis']['lifetime_column_name']}' column in dataframe!",
                    err=True)
         sys.exit(1)
@@ -454,7 +467,7 @@ def main(params_file, save_params, save_every_param,
         columns_error = False
         for column_name in params['cve_survival_analysis']['drop_if_true_column_names']:
             if column_name not in df.columns:
-                click.echo('\033[31m'+"ERROR"+'\033[39m'+": "+
+                click.echo('\033[31m'+"ERROR"+'\033[39m'+": " +
                            f"No '{column_name}' column in dataframe!",
                            err=True)
                 columns_error = True
@@ -467,7 +480,7 @@ def main(params_file, save_params, save_every_param,
             sys.exit(2)
 
     # censoring and lifetime
-    click.echo(f"Computing or extracting CVE lifetime "+
+    click.echo(f"Computing or extracting CVE lifetime " +
                f"('{params['cve_survival_analysis']['lifetime_column_name']}') in days...", file=sys.stderr)
     params['cve_survival_analysis']['lifetime_column_name [days]'] =\
         f"{params['cve_survival_analysis']['lifetime_column_name']} [days]"
@@ -500,7 +513,7 @@ def main(params_file, save_params, save_every_param,
     if 'lifespan_max' in params['cve_survival_analysis'] \
             and params['cve_survival_analysis']['lifespan_max'] is not None:
         lifespan_mask = df['Y'] < params['cve_survival_analysis']['lifespan_max']
-        click.echo(f"Limiting lifespan to < {params['cve_survival_analysis']['lifespan_max']} days"+
+        click.echo(f"Limiting lifespan to < {params['cve_survival_analysis']['lifespan_max']} days" +
                    f" kept {lifespan_mask.sum()} out of {lifespan_mask.count()} rows", file=sys.stderr)
         if df_mask is not None:
             df_mask &= lifespan_mask
@@ -509,7 +522,7 @@ def main(params_file, save_params, save_every_param,
     if 'lifespan_min' in params['cve_survival_analysis'] \
             and params['cve_survival_analysis']['lifespan_min'] is not None:
         lifespan_mask = df['Y'] > params['cve_survival_analysis']['lifespan_min']
-        click.echo(f"Limiting lifespan to > {params['cve_survival_analysis']['lifespan_min']} days"+
+        click.echo(f"Limiting lifespan to > {params['cve_survival_analysis']['lifespan_min']} days" +
                    f" kept {lifespan_mask.sum()} out of {lifespan_mask.count()} rows", file=sys.stderr)
         if df_mask is not None:
             df_mask &= lifespan_mask
@@ -551,7 +564,7 @@ def main(params_file, save_params, save_every_param,
             f_map = lambda row: f_map_generic(row, params['cve_survival_analysis']['risk_column_name'],
                                               values_hash)
         else:
-            click.echo(f"No good ordering for '{params['cve_survival_analysis']['risk_column_name']}' column "+
+            click.echo(f"No good ordering for '{params['cve_survival_analysis']['risk_column_name']}' column " +
                        f"of '{df.dtypes[params['cve_survival_analysis']['risk_column_name']]}' type",
                        file=sys.stderr)
 
@@ -567,14 +580,14 @@ def main(params_file, save_params, save_every_param,
 
     # do we have ranking?
     if f_map is None:
-        click.echo('\033[31m'+"ERROR"+'\033[39m'+": "+
+        click.echo('\033[31m'+"ERROR"+'\033[39m'+": " +
                    "No ranking provided or found for risk column",
                    err=True)
         sys.exit(3)
 
     if 'limit' in params['cve_survival_analysis'] \
             and params['cve_survival_analysis']['limit'] is not None:
-        click.echo(f"Computing stats for first {params['cve_survival_analysis']['limit']} elements,"+
+        click.echo(f"Computing stats for first {params['cve_survival_analysis']['limit']} elements," +
                    f" for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
                    file=sys.stderr)
         measures, groups_df, dff = \
@@ -593,13 +606,13 @@ def main(params_file, save_params, save_every_param,
     print(json.dumps(measures, indent=4))
     print(groups_df)
     if 'eval_path' in params:
-        eval_path = params['eval_path']
+        eval_path = pathlib.Path(params['eval_path'])
         # ensure that directory exists
         eval_path.mkdir(parents=True, exist_ok=True)
 
         # save metrics, statistics, and plots
         click.echo(f"Saving output files to '{eval_path}/' directory...", file=sys.stderr)
-        params['eval_path'] = str(params['eval_path']) # Path to string
+        params['eval_path'] = str(params['eval_path'])  # Path to string
         with eval_path.joinpath('cve_surv_params.yaml').open('w') as yaml_file:
             yaml.safe_dump(params, yaml_file, default_flow_style=False)
         with eval_path.joinpath('cve_surv_metrics.json').open('w') as json_file:
@@ -617,6 +630,7 @@ def main(params_file, save_params, save_every_param,
         groups_df.to_csv(eval_path / 'cve_surv_statistics.csv', index=True)
         plot_survival_function(params, eval_path / 'cve_survival_function.png',
                                dff, condition_names=condition_names_hash)
+
 
 if __name__ == '__main__':
     # does not match signature because of @click decorations
