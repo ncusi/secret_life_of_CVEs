@@ -241,14 +241,59 @@ def assign_programming_language_class(df, language_to_class_dict):
     cve_lifespans_df = df.copy().drop_duplicates()
     cve_lifespans_df['programming_paradigm'] = cve_lifespans_df['most_common_language'] \
         .apply(lambda language: programming_paradigm[language])
+    cve_lifespans_df['Programming paradigm'] = pd.Categorical(
+        cve_lifespans_df['programming_paradigm'].map({
+            1: 'procedural',
+            2: 'scripting',
+            3: 'functional'
+        }),
+        categories=['procedural', 'functional', 'scripting'],
+        ordered=True
+    )
     cve_lifespans_df['compilation_class'] = cve_lifespans_df['most_common_language'] \
         .apply(lambda language: compilation_class[language])
+    cve_lifespans_df['Compilation class'] = pd.Categorical(
+        cve_lifespans_df['compilation_class'].map({
+            1: 'static', 2: 'dynamic'
+        }),
+        categories=['static', 'dynamic'],
+        ordered=True
+    )
     cve_lifespans_df['type_class'] = cve_lifespans_df['most_common_language'] \
         .apply(lambda language: type_class[language])
+    cve_lifespans_df['Type class'] = pd.Categorical(
+        cve_lifespans_df['type_class'].map({
+            1: 'strong', 2: 'weak'
+        }),
+        categories=['weak', 'strong'],
+        ordered=True
+    )
     cve_lifespans_df['memory_model'] = cve_lifespans_df['most_common_language'] \
         .apply(lambda language: memory_model[language])
+    cve_lifespans_df['Memory model'] = pd.Categorical(
+        cve_lifespans_df['memory_model'].map({
+            1: 'managed', 2: 'non managed'
+        }),
+        categories=['managed', 'non managed'],
+        ordered=True
+    )
     cve_lifespans_df['extended_programming_paradigm'] = cve_lifespans_df['most_common_language'] \
         .apply(lambda language: extended_programming_paradigm[language])
+    cve_lifespans_df['Programming paradigm (extended)'] = pd.Categorical(
+        cve_lifespans_df['extended_programming_paradigm'].map({
+            1: 'functional',
+            2: 'object oriented',
+            3: 'procedural',
+            4: 'scripting'
+        }),
+        categories=[
+            'object oriented',
+            'procedural',
+            'functional',
+            'scripting'
+        ],
+        ordered=True
+    )
     return cve_lifespans_df
 
 
