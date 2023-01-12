@@ -299,7 +299,7 @@ def uniquify(param):
                    'note that if this option is not set, no output file is produced')
 @click.option('--path-prefix',
               type=str,
-              help='Prefix of every output file name (not ensuring that directory exists)')
+              help="Prefix of every output file name, can contain relative path e.g. 'dir/' or 'dir/prefix-'")
 # Parquet file containing dataframe with data to do CVE survival analysis on
 @click.argument('input_df',
                 type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path))
@@ -615,10 +615,23 @@ def main(params_file, save_params, save_every_param,
     print(groups_df)
     if 'eval_path' in params:
         eval_path = pathlib.Path(params['eval_path'])
+        path_prefix = params['path_prefix'] if 'path_prefix' in params else ""
+
+        # split path prefix into directory part and prefix part, if exists
+        if 'path_prefix' in params:
+            if path_prefix.endswith('/'):
+                maybe_dir = pathlib.Path(path_prefix)
+            else:
+                maybe_dir = pathlib.Path(path_prefix).parent
+            if maybe_dir != pathlib.Path('.'):
+                click.echo(f"Found '{maybe_dir}/' in '{path_prefix}' path prefix; ",
+                           nl=False, file=sys.stderr)
+                eval_path = eval_path.joinpath(maybe_dir)
+                path_prefix = str(pathlib.Path(path_prefix).name)
+                click.echo(f"path prefix stripped to '{path_prefix}'", file=sys.stderr)
+
         # ensure that directory exists
         eval_path.mkdir(parents=True, exist_ok=True)
-
-        path_prefix = params['path_prefix'] if 'path_prefix' in params else ""
 
         # save metrics, statistics, and plots
         click.echo(f"Saving output files to '{eval_path}/' directory...", file=sys.stderr)
