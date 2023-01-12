@@ -648,6 +648,7 @@ def main(params_file, save_params, save_every_param,
                 measures['bootstrap']['Confidence interval low'],
             f"Confidence interval {measures['bootstrap']['confidence threshold %']}% high":
                 measures['bootstrap']['Confidence interval high'],
+            'Parameters file': eval_path.joinpath(f'{path_prefix}cve_surv_params.yaml'),
         }, index=[ params['cve_survival_analysis']['risk_column_name'] ])\
             .to_csv(eval_path / f'{path_prefix}cve_surv_group_metrics.csv', index=True)
         groups_df.to_csv(eval_path / f'{path_prefix}cve_surv_statistics.csv', index=True)
