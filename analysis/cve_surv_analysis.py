@@ -6,7 +6,6 @@
 Based on 'notebooks/surv_ana.ipynb' and 'notebooks/surv_clean_programming_classes.ipynb'
 Jupyter Notebooks
 
-TODO: --path-prefix (different experiments into different files)
 TODO: --no-header / --append for <metrics>.csv
 TODO: `dvc stage` and `dvc exp ...`
 TODO: docstrings with typing
@@ -296,7 +295,11 @@ def uniquify(param):
 # NOTE: for no value to mean no output, there cannot be default value
 @click.option('--eval-path',
               type=click.Path(dir_okay=True, file_okay=False, path_type=pathlib.Path),
-              help='Directory where to save plots, metrics, and other output files')
+              help='Directory where to save plots, metrics, and other output files; ' +
+                   'note that if this option is not set, no output file is produced')
+@click.option('--path-prefix',
+              type=str,
+              help='Prefix of every output file name (not ensuring that directory exists)')
 # Parquet file containing dataframe with data to do CVE survival analysis on
 @click.argument('input_df',
                 type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path))
@@ -306,7 +309,7 @@ def main(params_file, save_params, save_every_param,
          lifetime_column, risk_column,
          drop_if_true, value,
          limit, lifespan_max, lifespan_min,
-         eval_path,
+         eval_path, path_prefix,
          input_df):
     """CVE survival analysis script"""
     # processing options and arguments
@@ -364,6 +367,9 @@ def main(params_file, save_params, save_every_param,
     if eval_path is not None:
         params['eval_path'] = eval_path
         params_changed = True
+    if path_prefix is not None:
+        params['path_prefix'] = path_prefix
+        params_changed = True
 
     # sanity check of lifespan_min (possibly from parameters file)
     if 'lifespan_min' in params['cve_survival_analysis'] \
@@ -408,6 +414,8 @@ def main(params_file, save_params, save_every_param,
         click.echo(f"- description: {params['description']}", file=sys.stderr)
     if 'eval_path' in params:
         click.echo(f"- eval path: '{params['eval_path']}' = '{params['eval_path'].absolute()}'", file=sys.stderr)
+    if 'path_prefix' in params:
+        click.echo(f"- path_prefix: '{params['path_prefix']}'", file=sys.stderr)
     click.echo(f"- confidence: {params['confidence']}", file=sys.stderr)
     click.echo(f"- bootstrap samples (n): {params['bootstrap_samples']}", file=sys.stderr)
     click.echo("- CVE survival analysis:", file=sys.stderr)
@@ -610,12 +618,14 @@ def main(params_file, save_params, save_every_param,
         # ensure that directory exists
         eval_path.mkdir(parents=True, exist_ok=True)
 
+        path_prefix = params['path_prefix'] if 'path_prefix' in params else ""
+
         # save metrics, statistics, and plots
         click.echo(f"Saving output files to '{eval_path}/' directory...", file=sys.stderr)
-        params['eval_path'] = str(params['eval_path'])  # Path to string
-        with eval_path.joinpath('cve_surv_params.yaml').open('w') as yaml_file:
+        params['eval_path'] = str(params['eval_path'])  # Path to string, for saving params in YAML file
+        with eval_path.joinpath(f'{path_prefix}cve_surv_params.yaml').open('w') as yaml_file:
             yaml.safe_dump(params, yaml_file, default_flow_style=False)
-        with eval_path.joinpath('cve_surv_metrics.json').open('w') as json_file:
+        with eval_path.joinpath(f'{path_prefix}cve_surv_metrics.json').open('w') as json_file:
             json.dump(measures, json_file, indent=4)
         pd.DataFrame({
             'Number of patients': measures['Number of patients'],
@@ -626,9 +636,9 @@ def main(params_file, save_params, save_every_param,
             f"Confidence interval {measures['bootstrap']['confidence threshold %']}% high":
                 measures['bootstrap']['Confidence interval high'],
         }, index=[ params['cve_survival_analysis']['risk_column_name'] ])\
-            .to_csv(eval_path / 'cve_surv_group_metrics.csv', index=True)
-        groups_df.to_csv(eval_path / 'cve_surv_statistics.csv', index=True)
-        plot_survival_function(params, eval_path / 'cve_survival_function.png',
+            .to_csv(eval_path / f'{path_prefix}cve_surv_group_metrics.csv', index=True)
+        groups_df.to_csv(eval_path / f'{path_prefix}cve_surv_statistics.csv', index=True)
+        plot_survival_function(params, eval_path / f'{path_prefix}cve_survival_function.png',
                                dff, condition_names=condition_names_hash)
 
 
