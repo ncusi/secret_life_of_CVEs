@@ -167,7 +167,8 @@ def assign_programming_language_classes(df, language_to_class_dict):
     df.replace(0, np.nan, inplace=True)
     cve_lifespans_language_df = df.melt(id_vars=['commit_cves', 'project_names', 'commits',
                                                  'cve_lifespan_commiter_time', 'cve_lifespan_author_time',
-                                                 'embargo_min', 'embargo_max']).dropna()
+                                                 'embargo_min', 'embargo_max', 'lang_Shell',
+                                                 'other_languages']).dropna()
     cve_lifespans_language_df['programming_paradigm'] = cve_lifespans_language_df['variable'] \
         .apply(lambda language: programming_paradigm[language])
     cve_lifespans_language_df['Programming paradigm'] = pd.Categorical(
