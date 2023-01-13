@@ -30,10 +30,11 @@ def main():
 
 def prepare_cve_lifespans_with_language_classes_df(cleaned_df, language_to_class_dict):
     language_columns = language_to_class_dict['language_columns']
+    extended_language_columns = language_columns + ['lang_Shell', 'other_languages']
 
     commits_per_cve_df = calculate_commits_per_cve(cleaned_df)
 
-    language_files_per_cve_df = calculate_language_files_per_cve(cleaned_df, language_columns)
+    language_files_per_cve_df = calculate_language_files_per_cve(cleaned_df, extended_language_columns)
 
     lifespan_df = calculate_lifespan(cleaned_df)
 
@@ -51,7 +52,7 @@ def prepare_cve_lifespans_with_language_classes_df(cleaned_df, language_to_class
 
     selected_columns = ['commits', 'commit_cves', 'project_names',
                         'cve_lifespan_commiter_time', 'cve_lifespan_author_time', 'embargo_min',
-                        'embargo_max'] + language_columns
+                        'embargo_max'] + extended_language_columns
 
     all_used_language_df = result_df[selected_columns]
     most_used_language_df = prepare_cve_most_used_language_df(all_used_language_df, language_columns)
