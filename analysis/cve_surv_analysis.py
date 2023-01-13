@@ -300,7 +300,7 @@ def uniquify(param):
 @click.option('--path-prefix',
               type=str,
               help="Prefix of every output file name, can contain relative path e.g. 'dir/' or 'dir/prefix-'")
-@click.option('--append-to-group-metrics', '-a', 'append',
+@click.option('--append', '--append-to-group-metrics', '-a',
               is_flag=True, type=bool, default=False,
               help="Append to CSV file with group metrics 'cve_surv_statistics.csv', " +
                    "also ignore path prefix for this file")
