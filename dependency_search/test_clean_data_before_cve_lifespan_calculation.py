@@ -2,27 +2,36 @@ from unittest import TestCase
 
 import pandas as pd
 
-from clean_data_before_cve_lifespan_calculation import remove_additional_languages, remove_incorrect_dates, \
+from clean_data_before_cve_lifespan_calculation import combine_additional_languages, remove_incorrect_dates, \
     remove_more_than_one_project
 
 
 class Test(TestCase):
-    def test_remove_additional_languages(self):
+    def test_combine_additional_languages(self):
         df = pd.DataFrame(data={
             'commit': ['80cfab8f', '84967c'],
             'commit_cves': ['CVE-2014-2972', 'CVE-2014-2972'],
             'commiter_time': ['2014-08-04 15:38:27', '2014-07-23 11:44:25'],
             'author_time': ['2014-08-04 15:34:55', '2014-07-23 11:44:25'],
             'project_names': ['mirror-rpm_exim', 'buildroot_buildroot'],
-            'total_number_of_files': [0, 3052],
+            'total_number_of_files': [4, 3052],
             'published_date': ['2014-09-04T17:55:00', '2014-09-04T17:55:00'],
             'error': [None, None],
             'ext_.nasm': [1, None],
             'ext_.c': [None, 3],
-            'lang_C': [None, 3]}
+            'lang_C': [None, 3],
+            'lang_C++': [2, None],
+            'lang_D': [2, None],
+            'lang_Shell': [1, 2]}
         )
-        result_df = remove_additional_languages(df, ['lang_C'])
-        self.assertEqual(result_df.shape, (1, 9))
+        result_df = combine_additional_languages(df, ['lang_C'])
+        self.assertEqual(result_df.shape, (2, 11))
+        self.assertEqual(result_df['other_languages'][0], 4)
+        self.assertEqual(result_df['other_languages'][1], 0)
+        self.assertTrue(pd.isna(result_df['lang_C'][0]))
+        self.assertEqual(result_df['lang_C'][1], 3)
+        self.assertEqual(result_df['lang_Shell'][0], 1)
+        self.assertEqual(result_df['lang_Shell'][1], 2)
 
     def test_remove_incorrect_dates(self):
         df = pd.DataFrame(data={

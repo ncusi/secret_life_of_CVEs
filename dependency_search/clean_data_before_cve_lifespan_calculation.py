@@ -24,7 +24,7 @@ def main():
 
     combined_df = pd.read_parquet(combined_df_filename)
 
-    selected_languages_df = remove_additional_languages(combined_df, language_columns)
+    selected_languages_df = combine_additional_languages(combined_df, language_columns)
     corrected_dates_df = remove_incorrect_dates(selected_languages_df)
     corrected_projects_df = remove_more_than_one_project(corrected_dates_df)
     corrected_projects_df.drop_duplicates(inplace=True)
@@ -37,13 +37,17 @@ def read_language_to_class_dict(language_to_class_dict_filename):
     return language_to_class
 
 
-def remove_additional_languages(df, language_columns):
+def combine_additional_languages(df, language_columns):
+    selected_language_columns = language_columns + ['lang_Shell']
+    all_language_columns = [lang_column for lang_column in df if lang_column.startswith('lang_')]
+    other_languages_columns = [language_column for language_column in all_language_columns if language_column not in selected_language_columns]
+    df['other_languages'] = df[other_languages_columns].sum(axis=1)
     columns = ['commit', 'commit_cves', 'commiter_time', 'author_time',
                'project_names', 'total_number_of_files',
-               'published_date', 'error'
-               ] + language_columns
+               'published_date', 'error', 'other_languages'
+               ] + selected_language_columns
     selected_languages_df = df[columns]
-    selected_languages_df = selected_languages_df.dropna(subset=language_columns, how='all')
+    selected_languages_df = selected_languages_df.dropna(subset=columns, how='all')
     return selected_languages_df
 
 
