@@ -140,22 +140,22 @@ stages:
       md5: 3de6771a0070cc9551d6b40ad849e2c8
       size: 4163
     - path: dependency_search/calculate_cve_lifespan_per_project.py
-      md5: ff82c7942daee39abc128e0fb09ce020
-      size: 10934
+      md5: 0bb031800c4b87a5c6f69ff9a86d3fc0
+      size: 15290
     outs:
     - path: data/cve_lifespan_df
-      md5: cec2f3caaafd000ce37744ba98f21be1
-      size: 3374212
+      md5: 55afc2ae88ea060d18cab5647ff91274
+      size: 2895039
     - path: data/cve_lifespan_language_df
-      md5: b31ae02774ff469d248005e7067c2561
-      size: 9257784
+      md5: f5fd259b3fc5e051d3a537e36c69d54b
+      size: 4849516
   merge_cve_info_into_lifespan:
     cmd: python3 dependency_search/merge_cve_info_and_cve_lifespan.py data/unique_cve_info-cvss_cwe_ranking_etc.parquet
       data/cve_lifespan_language_df data/cve_survival_input_df
     deps:
     - path: data/cve_lifespan_language_df
-      md5: b31ae02774ff469d248005e7067c2561
-      size: 9257784
+      md5: f5fd259b3fc5e051d3a537e36c69d54b
+      size: 4849516
     - path: data/unique_cve_info-cvss_cwe_ranking_etc.parquet
       md5: 2fd6b6671e1c0b8c8c93049d58b294d4
       size: 917236
@@ -164,5 +164,5 @@ stages:
       size: 1167
     outs:
     - path: data/cve_survival_input_df
-      md5: b6a7448ab6eb2976fdf41b184ba89a02
-      size: 6106457
+      md5: c1d6d4860ca3c403ea2714fdc334d3a2
+      size: 5460287
