@@ -300,6 +300,10 @@ def uniquify(param):
 @click.option('--path-prefix',
               type=str,
               help="Prefix of every output file name, can contain relative path e.g. 'dir/' or 'dir/prefix-'")
+@click.option('--append-to-group-metrics', '-a', 'append',
+              is_flag=True, type=bool, default=False,
+              help="Append to CSV file with group metrics 'cve_surv_statistics.csv', " +
+                   "also ignore path prefix for this file")
 # Parquet file containing dataframe with data to do CVE survival analysis on
 @click.argument('input_df',
                 type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path))
@@ -310,6 +314,7 @@ def main(params_file, save_params, save_every_param,
          drop_if_true, value,
          limit, lifespan_max, lifespan_min,
          eval_path, path_prefix,
+         append,
          input_df):
     """CVE survival analysis script"""
     # processing options and arguments
@@ -617,6 +622,10 @@ def main(params_file, save_params, save_every_param,
         eval_path = pathlib.Path(params['eval_path'])
         path_prefix = params['path_prefix'] if 'path_prefix' in params else ""
 
+        # ignore --path-prefix for group metrics CSV if appending
+        if append:
+            group_metrics_path = pathlib.Path(eval_path / 'cve_surv_group_metrics.csv')
+
         # split path prefix into directory part and prefix part, if exists
         if 'path_prefix' in params:
             if path_prefix.endswith('/'):
@@ -633,8 +642,18 @@ def main(params_file, save_params, save_every_param,
         # ensure that directory exists
         eval_path.mkdir(parents=True, exist_ok=True)
 
+        if not append:
+            # take into account --path-prefix
+            group_metrics_path = pathlib.Path(eval_path / f'{path_prefix}cve_surv_group_metrics.csv')
+        group_metrics_kwargs = {}
+
         # save metrics, statistics, and plots
         click.echo(f"Saving output files to '{eval_path}/' directory...", file=sys.stderr)
+        if append:
+            group_metrics_kwargs['mode'] = 'a'  # default is 'w'
+            if group_metrics_path.exists():
+                group_metrics_kwargs['header'] = False
+
         params['eval_path'] = str(params['eval_path'])  # Path to string, for saving params in YAML file
         with eval_path.joinpath(f'{path_prefix}cve_surv_params.yaml').open('w') as yaml_file:
             yaml.safe_dump(params, yaml_file, default_flow_style=False)
@@ -650,7 +669,7 @@ def main(params_file, save_params, save_every_param,
                 measures['bootstrap']['Confidence interval high'],
             'Parameters file': eval_path.joinpath(f'{path_prefix}cve_surv_params.yaml'),
         }, index=[ params['cve_survival_analysis']['risk_column_name'] ])\
-            .to_csv(eval_path / f'{path_prefix}cve_surv_group_metrics.csv', index=True)
+            .to_csv(group_metrics_path, index=True, **group_metrics_kwargs)
         groups_df.to_csv(eval_path / f'{path_prefix}cve_surv_statistics.csv', index=True)
         plot_survival_function(params, eval_path / f'{path_prefix}cve_survival_function.png',
                                dff, condition_names=condition_names_hash)
