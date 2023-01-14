@@ -421,6 +421,8 @@ def main(params_file, save_params, save_every_param,
         click.echo(f"- eval path: '{params['eval_path']}' = '{params['eval_path'].absolute()}'", file=sys.stderr)
     if 'path_prefix' in params:
         click.echo(f"- path_prefix: '{params['path_prefix']}'", file=sys.stderr)
+    if append:
+        click.echo("- appending to 'cve_surv_group_metrics.csv'", file=sys.stderr)
     click.echo(f"- confidence: {params['confidence']}", file=sys.stderr)
     click.echo(f"- bootstrap samples (n): {params['bootstrap_samples']}", file=sys.stderr)
     click.echo("- CVE survival analysis:", file=sys.stderr)
@@ -623,8 +625,8 @@ def main(params_file, save_params, save_every_param,
         path_prefix = params['path_prefix'] if 'path_prefix' in params else ""
 
         # ignore --path-prefix for group metrics CSV if appending
-        if append:
-            group_metrics_path = pathlib.Path(eval_path / 'cve_surv_group_metrics.csv')
+        # will be adjusted for non --append-to-group-metrics
+        group_metrics_path = pathlib.Path(eval_path / 'cve_surv_group_metrics.csv')
 
         # split path prefix into directory part and prefix part, if exists
         if 'path_prefix' in params:
