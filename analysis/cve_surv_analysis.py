@@ -318,12 +318,20 @@ def main(params_file, save_params, save_every_param,
          input_df):
     """CVE survival analysis script"""
     # processing options and arguments
+    all_params = {}
     params = {}
     click.echo(f"Reading parameters from '{params_file}'...", file=sys.stderr)
     with click.open_file(params_file, mode='r') as yaml_file:
         all_params = yaml.safe_load(yaml_file)
+        if all_params is None:
+            click.echo(f"- no documents in parameters file ", file=sys.stderr)
+            all_params = {}
+        else:
+            click.echo(f"- read {len(all_params)} sections from first document in parameters file",
+                       file=sys.stderr)
         if (all_params is not None) and ("eval" in all_params):
             params = all_params["eval"]
+            click.echo(f"- read {len(params)} parameters from 'eval' section", file=sys.stderr)
     params_changed = False
 
     # autovivification
@@ -370,10 +378,10 @@ def main(params_file, save_params, save_every_param,
         params['cve_survival_analysis']['lifespan_min'] = lifespan_min
         params_changed = True
     if eval_path is not None:
-        params['eval_path'] = eval_path
+        params['eval_path'] = str(eval_path)
         params_changed = True
     if path_prefix is not None:
-        params['path_prefix'] = path_prefix
+        params['path_prefix'] = str(path_prefix)
         params_changed = True
 
     # sanity check of lifespan_min (possibly from parameters file)
@@ -389,9 +397,10 @@ def main(params_file, save_params, save_every_param,
     if params_changed:
         click.echo("some parameters changed with options from the command line")
     if params_changed and save_params and not save_every_param:
-        click.echo(f"Saving all parameters back to '{params_file}'...", file=sys.stderr)
+        click.echo(f"Saving parameters back to '{params_file}' after changes...", file=sys.stderr)
         with click.open_file(params_file, mode='w', atomic=True) as yaml_file:
-            yaml.safe_dump(params, yaml_file, default_flow_style=False)
+            all_params['eval'] = params
+            yaml.safe_dump(all_params, yaml_file, default_flow_style=False)
 
     # set default values for unset parameters
     if 'confidence' not in params:
@@ -409,9 +418,16 @@ def main(params_file, save_params, save_every_param,
     if save_every_param:
         click.echo(f"Saving every parameter back to '{params_file}'...", file=sys.stderr)
         with click.open_file(params_file, mode='w', atomic=True) as yaml_file:
-            yaml.safe_dump(params, yaml_file, default_flow_style=False)
+            all_params['eval'] = params
+            yaml.safe_dump(all_params, yaml_file, default_flow_style=False)
 
     # TODO?: use local variables in place of `params` hash for shorter code
+
+    # convert paths to pathlib.Path
+    if eval_path is not None:
+        params['eval_path'] = eval_path
+    elif 'eval_path' in params:
+        params['eval_path'] = pathlib.Path(params['eval_path'])
 
     # print parameters
     click.echo("Parameters:", file=sys.stderr)
