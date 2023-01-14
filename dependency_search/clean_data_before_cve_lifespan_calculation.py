@@ -26,7 +26,7 @@ def main():
 
     selected_languages_df = combine_additional_languages(combined_df, language_columns)
     corrected_dates_df = remove_incorrect_dates(selected_languages_df)
-    corrected_projects_df = remove_more_than_one_project(corrected_dates_df)
+    corrected_projects_df = handle_more_than_one_project(corrected_dates_df)
     corrected_projects_df.drop_duplicates(inplace=True)
     corrected_projects_df.to_parquet(cleaned_data_df_filename)
 
@@ -40,7 +40,8 @@ def read_language_to_class_dict(language_to_class_dict_filename):
 def combine_additional_languages(df, language_columns):
     selected_language_columns = language_columns + ['lang_Shell']
     all_language_columns = [lang_column for lang_column in df if lang_column.startswith('lang_')]
-    other_languages_columns = [language_column for language_column in all_language_columns if language_column not in selected_language_columns]
+    other_languages_columns = [language_column for language_column in all_language_columns if
+                               language_column not in selected_language_columns]
     df['other_languages'] = df[other_languages_columns].sum(axis=1)
     columns = ['commit', 'commit_cves', 'commiter_time', 'author_time',
                'project_names', 'total_number_of_files',
@@ -63,10 +64,30 @@ def remove_incorrect_dates(df):
     return corrected_dates_df
 
 
-def remove_more_than_one_project(df):
+def handle_more_than_one_project(df):
     non_empty_projects_df = df[df['project_names'].isna() == False]
-    one_project_per_each_cve_df = non_empty_projects_df[
+    df_commits_with_one_project = non_empty_projects_df[
         non_empty_projects_df['project_names'].map(lambda x: len(x.split(";"))) == 1]
+
+    df_g = df_commits_with_one_project.groupby(['project_names']).agg({'project_names': 'count'})
+    project_idx = df_g['project_names'].sort_index().to_dict()
+
+    def max_project(projects):
+        project_list = projects.split(';')
+        max_p = project_list[0]
+        max_v = 0
+
+        for x in project_list:
+            if x in project_idx and project_idx[x] > max_v:
+                max_p = x
+                max_v = project_idx[x]
+        return max_p
+
+    df_multiple_projects = non_empty_projects_df[
+        non_empty_projects_df['project_names'].map(lambda x: len(x.split(";"))) > 1]
+    df_multiple_projects['project_names'] = df_multiple_projects['project_names'].map(max_project)
+
+    one_project_per_each_cve_df = pd.concat([df_commits_with_one_project, df_multiple_projects])
     return one_project_per_each_cve_df
 
 

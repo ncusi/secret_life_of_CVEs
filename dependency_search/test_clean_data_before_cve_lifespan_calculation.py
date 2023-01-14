@@ -3,7 +3,7 @@ from unittest import TestCase
 import pandas as pd
 
 from clean_data_before_cve_lifespan_calculation import combine_additional_languages, remove_incorrect_dates, \
-    remove_more_than_one_project
+    handle_more_than_one_project
 
 
 class Test(TestCase):
@@ -48,7 +48,7 @@ class Test(TestCase):
         result_df = remove_incorrect_dates(df)
         self.assertEqual(result_df.shape, (1, 9))
 
-    def test_remove_more_than_one_project(self):
+    def test_handle_more_than_one_project(self):
         df = pd.DataFrame(data={
             'commit': ['d26201', 'd06eddd15'],
             'commit_cves': ['CVE-2008-5079', 'CVE-2014-3470'],
@@ -60,5 +60,7 @@ class Test(TestCase):
             'error': [None, None],
             'lang_C': [1, 4]}
         )
-        result_df = remove_more_than_one_project(df)
-        self.assertEqual(result_df.shape, (1, 9))
+        result_df = handle_more_than_one_project(df)
+        self.assertEqual(result_df.shape, (2, 9))
+        self.assertEqual(result_df['project_names'][0], 'broftkd_linux-history-repo')
+        self.assertEqual(result_df['project_names'][1], 'bloomberg_chromium.bb')
