@@ -151,8 +151,12 @@ stages:
       size: 2049724
   merge_cve_info_into_lifespan:
     cmd: python3 dependency_search/merge_cve_info_and_cve_lifespan.py data/unique_cve_info-cvss_cwe_ranking_etc.parquet
-      data/cve_lifespan_language_df data/cve_survival_input_df
+      data/cve_lifespan_language_df data/cve_lifespan_df data/cve_survival_input_df
+      data/cve_survival_input_most_used_language_df
     deps:
+    - path: data/cve_lifespan_df
+      md5: f549b8e124694b97dcf6b1b1ce05d8aa
+      size: 7748773
     - path: data/cve_lifespan_language_df
       md5: 1b043b2562d56b6a11596fd01dcbbb07
       size: 2049724
@@ -160,9 +164,12 @@ stages:
       md5: 2fd6b6671e1c0b8c8c93049d58b294d4
       size: 917236
     - path: dependency_search/merge_cve_info_and_cve_lifespan.py
-      md5: c6a6886638f7189c78cbd1c3e2a9bffb
-      size: 1167
+      md5: d8fbc2694d8bd46735090bd1080d3b4d
+      size: 1609
     outs:
     - path: data/cve_survival_input_df
       md5: 159163e9a3f9936fdc4a7993e2fbaf1c
       size: 1980380
+    - path: data/cve_survival_input_most_used_language_df
+      md5: 231a69f9a759c331502e47d3369f3a7c
+      size: 9207992
