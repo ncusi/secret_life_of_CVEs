@@ -646,15 +646,17 @@ def main(params_file, save_params, save_every_param,
 
         # split path prefix into directory part and prefix part, if exists
         if 'path_prefix' in params:
+            orig_path_prefix = path_prefix
             if path_prefix.endswith('/'):
                 maybe_dir = pathlib.Path(path_prefix)
+                path_prefix = ""
             else:
                 maybe_dir = pathlib.Path(path_prefix).parent
+                path_prefix = str(pathlib.Path(path_prefix).name)
             if maybe_dir != pathlib.Path('.'):
-                click.echo(f"Found '{maybe_dir}/' in '{path_prefix}' path prefix; ",
+                click.echo(f"Found '{maybe_dir}/' in '{orig_path_prefix}' path prefix; ",
                            nl=False, file=sys.stderr)
                 eval_path = eval_path.joinpath(maybe_dir)
-                path_prefix = str(pathlib.Path(path_prefix).name)
                 click.echo(f"path prefix stripped to '{path_prefix}'", file=sys.stderr)
 
         # ensure that directory exists
