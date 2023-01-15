@@ -174,7 +174,8 @@ stages:
       md5: 231a69f9a759c331502e47d3369f3a7c
       size: 9207992
   evaluate-cve_surv:
-    cmd: python3 analysis/cve_surv_analysis.py --eval-path=eval/ data/cve_survival_input_df
+    cmd: python3 analysis/cve_surv_analysis.py --eval-path=eval/ --path-prefix=''
+      data/cve_survival_input_df
     deps:
     - path: analysis/cve_surv_analysis.py
       md5: 2e13b7d160aa1dc16eaaea3ee3b9e889
@@ -191,14 +192,14 @@ stages:
         eval.description: no additional filtering
     outs:
     - path: eval/cve_surv_group_metrics.csv
-      md5: 7c3ba6936144bd44e5a99e4adb06751a
+      md5: 1db4d263dc5726fdc4069f43f322679f
       size: 229
     - path: eval/cve_surv_metrics.json
-      md5: 478f874296355947ba886ec5e122f6bc
+      md5: 26fe082fe04014a08ebaa1a8920e8ff9
       size: 462
     - path: eval/cve_surv_params.yaml
-      md5: 7eada3ce396eeb74c7fc1ed7bca6cfb0
-      size: 295
+      md5: 7e20cc3db638f4d3c134ad9e414edc81
+      size: 311
     - path: eval/cve_surv_statistics.csv
       md5: 14508b50a9a5c1541ae08715e6125b49
       size: 239

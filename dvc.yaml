@@ -96,7 +96,7 @@ stages:
   evaluate-cve_surv:
     cmd: >-
       python3 analysis/cve_surv_analysis.py
-      --eval-path=eval/
+      --eval-path=eval/ --path-prefix=''
       data/cve_survival_input_df
     params:
       - eval.confidence

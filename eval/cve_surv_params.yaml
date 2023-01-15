@@ -7,3 +7,4 @@ cve_survival_analysis:
   risk_column_name: embargo_max
 description: no additional filtering
 eval_path: eval
+path_prefix: ''
