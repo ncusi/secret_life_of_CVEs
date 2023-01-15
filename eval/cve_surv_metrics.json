@@ -6,9 +6,9 @@
     "Survival years, median": 2.2465753424657535,
     "Dxy (full)": -0.06378788989279438,
     "bootstrap": {
-        "Dxy": -0.06362991910253521,
-        "Confidence interval low": -0.06386445557999888,
-        "Confidence interval high": -0.06339538262507154,
+        "Dxy": -0.06366112380426198,
+        "Confidence interval low": -0.06388613277558575,
+        "Confidence interval high": -0.0634361148329382,
         "confidence threshold %": 95.0,
         "bootstrap samples": 50
     }

@@ -1,2 +1,2 @@
 ,Number of patients,% of cohort,Dxy,Confidence interval 95.0% low,Confidence interval 95.0% high,Parameters file
-embargo_max,145996.0,100.0,-0.06362991910253521,-0.06386445557999888,-0.06339538262507154,eval/cve_surv_params.yaml
+embargo_max,145996.0,100.0,-0.06366112380426198,-0.06388613277558575,-0.0634361148329382,eval/cve_surv_params.yaml
