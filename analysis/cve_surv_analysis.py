@@ -6,10 +6,8 @@
 Based on 'notebooks/surv_ana.ipynb' and 'notebooks/surv_clean_programming_classes.ipynb'
 Jupyter Notebooks
 
-TODO: --no-header / --append for <metrics>.csv
-TODO: `dvc stage` and `dvc exp ...`
+TODO: use 'dvc' module for reading params: `dvc.api.params_show()`
 TODO: docstrings with typing
-TODO: resolve problems from linter
 TODO: use mlflow / dvclive / dagshub API for saving metrics
 TODO: plot output as set of values (for dvc)
 TODO: other plots, and other ways of evaluating survival models
@@ -24,8 +22,8 @@ import scipy.stats
 import pandas as pd
 from joblib import Parallel, delayed
 from lifelines.utils import concordance_index
-from matplotlib import pyplot as plt
 from sksurv.nonparametric import kaplan_meier_estimator
+from matplotlib import pyplot as plt
 from tqdm import tqdm
 import yaml        # for simple YAML format handling
 import click       # command line parsing
