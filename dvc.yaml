@@ -93,3 +93,29 @@ stages:
     outs:
     - data/cve_survival_input_df
     - data/cve_survival_input_most_used_language_df
+  evaluate-cve_surv:
+    cmd: >-
+      python3 analysis/cve_surv_analysis.py
+      --eval-path=eval/
+      data/cve_survival_input_df
+    params:
+      - eval.confidence
+      - eval.bootstrap_samples
+      - eval.description
+      - eval.cve_survival_analysis
+    deps:
+      - analysis/cve_surv_analysis.py
+      - data/cve_survival_input_df
+    metrics:
+      - eval/cve_surv_metrics.json:
+          cache: false
+      - eval/cve_surv_group_metrics.csv:
+          cache: false
+      - eval/cve_surv_statistics.csv:
+          cache: false
+    plots:
+      - eval/cve_survival_function.png:
+          cache: false
+    outs:
+      - eval/cve_surv_params.yaml:
+          cache: false
