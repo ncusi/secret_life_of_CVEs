@@ -84,15 +84,38 @@ stages:
     - data/cve_lifespan_df
   merge_cve_info_into_lifespan:
     cmd: python3 dependency_search/merge_cve_info_and_cve_lifespan.py data/unique_cve_info-cvss_cwe_ranking_etc.parquet
-      data/cve_lifespan_language_df data/cve_lifespan_df data/cve_survival_input_df data/cve_survival_input_most_used_language_df
+      data/cve_lifespan_language_df data/cve_lifespan_df data/cve_lifespan_and_cve_info_df data/cve_lifespan_language_and_cve_info_df
     deps:
     - data/cve_lifespan_language_df
     - data/cve_lifespan_df
     - data/unique_cve_info-cvss_cwe_ranking_etc.parquet
     - dependency_search/merge_cve_info_and_cve_lifespan.py
     outs:
-    - data/cve_survival_input_df
-    - data/cve_survival_input_most_used_language_df
+    - data/cve_lifespan_and_cve_info_df
+    - data/cve_lifespan_language_and_cve_info_df
+  # NOTE: the following two "merge_project_info_*" stages may be moved before "merge_cve_info_into_lifespan" stage
+  merge_project_info_into_lifespan:
+    cmd: >-
+      python3 projects_stats/merge_with_project_metadata.py
+      data/cve_lifespan_and_cve_info_df data/unique_project_info.parquet
+      data/cve_survival_input_df
+    deps:
+      - projects_stats/merge_with_project_metadata.py
+      -  data/unique_project_info.parquet
+      - data/cve_lifespan_and_cve_info_df
+    outs:
+      - data/cve_survival_input_df
+  merge_project_info_into_lifespan_language:
+    cmd: >-
+      python3 projects_stats/merge_with_project_metadata.py
+      data/cve_lifespan_language_and_cve_info_df  data/unique_project_info.parquet
+      data/cve_survival_input_most_used_language_df
+    deps:
+      - projects_stats/merge_with_project_metadata.py
+      -  data/unique_project_info.parquet
+      - data/cve_lifespan_language_and_cve_info_df
+    outs:
+      - data/cve_survival_input_most_used_language_df
   evaluate-cve_surv:
     cmd: >-
       python3 analysis/cve_surv_analysis.py
