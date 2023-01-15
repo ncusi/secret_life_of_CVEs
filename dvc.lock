@@ -173,3 +173,35 @@ stages:
     - path: data/cve_survival_input_most_used_language_df
       md5: 231a69f9a759c331502e47d3369f3a7c
       size: 9207992
+  evaluate-cve_surv:
+    cmd: python3 analysis/cve_surv_analysis.py --eval-path=eval/ data/cve_survival_input_df
+    deps:
+    - path: analysis/cve_surv_analysis.py
+      md5: 2e13b7d160aa1dc16eaaea3ee3b9e889
+      size: 32817
+    - path: data/cve_survival_input_df
+      md5: 159163e9a3f9936fdc4a7993e2fbaf1c
+      size: 1980380
+    params:
+      params.yaml:
+        eval.bootstrap_samples: 50
+        eval.confidence: 0.95
+        eval.cve_survival_analysis:
+          risk_column_name: embargo_max
+        eval.description: no additional filtering
+    outs:
+    - path: eval/cve_surv_group_metrics.csv
+      md5: 7c3ba6936144bd44e5a99e4adb06751a
+      size: 229
+    - path: eval/cve_surv_metrics.json
+      md5: 478f874296355947ba886ec5e122f6bc
+      size: 462
+    - path: eval/cve_surv_params.yaml
+      md5: 7eada3ce396eeb74c7fc1ed7bca6cfb0
+      size: 295
+    - path: eval/cve_surv_statistics.csv
+      md5: 14508b50a9a5c1541ae08715e6125b49
+      size: 239
+    - path: eval/cve_survival_function.png
+      md5: 755c74c3374c20d47a700ea580f36117
+      size: 33152

@@ -1,0 +1,6 @@
+eval:
+  confidence: 0.95
+  bootstrap_samples: 50
+  description: no additional filtering
+  cve_survival_analysis:
+    risk_column_name: embargo_max

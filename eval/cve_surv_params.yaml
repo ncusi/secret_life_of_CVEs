@@ -1,0 +1,9 @@
+bootstrap_samples: 50
+confidence: 0.95
+cve_survival_analysis:
+  drop_if_true_column_names: []
+  lifetime_column_name: cve_lifespan_commiter_time
+  lifetime_column_name [days]: cve_lifespan_commiter_time [days]
+  risk_column_name: embargo_max
+description: no additional filtering
+eval_path: eval

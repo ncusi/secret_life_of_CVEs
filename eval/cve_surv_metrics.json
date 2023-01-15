@@ -1,0 +1,15 @@
+{
+    "Cohort": 145996,
+    "Number of patients": 145996.0,
+    "% of cohort": 100.0,
+    "Survival days, median": 820.0,
+    "Survival years, median": 2.2465753424657535,
+    "Dxy (full)": -0.06378788989279438,
+    "bootstrap": {
+        "Dxy": -0.06381990884574887,
+        "Confidence interval low": -0.06406362043915526,
+        "Confidence interval high": -0.06357619725234248,
+        "confidence threshold %": 95.0,
+        "bootstrap samples": 50
+    }
+}
