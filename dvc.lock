@@ -178,8 +178,8 @@ stages:
       data/cve_survival_input_df
     deps:
     - path: analysis/cve_surv_analysis.py
-      md5: 2e13b7d160aa1dc16eaaea3ee3b9e889
-      size: 32817
+      md5: 63dd2aba7d6164c0d01605871a371063
+      size: 32766
     - path: data/cve_survival_input_df
       md5: 62f343325cb3567ab68a9e1ad33fa2bf
       size: 2429429
@@ -192,10 +192,10 @@ stages:
         eval.description: no additional filtering
     outs:
     - path: eval/cve_surv_group_metrics.csv
-      md5: 276624d466ab45490e0f72622bf9f4f1
+      md5: e6902dc7617a6a85c3b673d210238071
       size: 228
     - path: eval/cve_surv_metrics.json
-      md5: 586592634fa207f300f2ce461c8edef7
+      md5: 7ef2fb8ad42b0bebe65215713860464a
       size: 461
     - path: eval/cve_surv_params.yaml
       md5: 7e20cc3db638f4d3c134ad9e414edc81
@@ -240,3 +240,16 @@ stages:
     - path: data/cve_survival_input_df
       md5: 62f343325cb3567ab68a9e1ad33fa2bf
       size: 2429429
+  dependency_df:
+    cmd: python3 dependency_search/prepare_dep_df.py data/cve_df_filename data/dep_df
+    deps:
+    - path: data/cve_df_filename
+      md5: 2edd1805e47670ff381b6e81f5b03463
+      size: 60583695
+    - path: dependency_search/prepare_dep_df.py
+      md5: e2493ae952ee56ccb4b0e2779ae58cf9
+      size: 834
+    outs:
+    - path: data/dep_df
+      md5: 462062bf333cd25670e3e65a9abb980f
+      size: 30932536
