@@ -114,52 +114,55 @@ stages:
       size: 4163
   clean_combined_df:
     cmd: python3 dependency_search/clean_data_before_cve_lifespan_calculation.py data/combined_df
-      data/language_to_class.json data/cleaned_cve_df
+      data/dep_df data/language_to_class.json data/cleaned_cve_df
     deps:
     - path: data/combined_df
       md5: ee44b4e1b17386cdf5e43bce507ba2c1
       size: 80110439
+    - path: data/dep_df
+      md5: 462062bf333cd25670e3e65a9abb980f
+      size: 30932536
     - path: data/language_to_class.json
       md5: 3de6771a0070cc9551d6b40ad849e2c8
       size: 4163
     - path: dependency_search/clean_data_before_cve_lifespan_calculation.py
-      md5: 3f0a9374659576b1c72d292ef13b2b96
-      size: 4129
+      md5: 0dcea10cfb082122517a96c040c03eeb
+      size: 4405
     outs:
     - path: data/cleaned_cve_df
-      md5: 6a5e7a6ca78f408c6887685feb6c04f0
-      size: 56035148
+      md5: 45061acdfedd3279de1342a230efd7ee
+      size: 48006091
   compute_cve_lifespan:
     cmd: python3 dependency_search/calculate_cve_lifespan_per_project.py data/cleaned_cve_df
       data/language_to_class.json data/cve_lifespan_language_df data/cve_lifespan_df
     deps:
     - path: data/cleaned_cve_df
-      md5: 6a5e7a6ca78f408c6887685feb6c04f0
-      size: 56035148
+      md5: 45061acdfedd3279de1342a230efd7ee
+      size: 48006091
     - path: data/language_to_class.json
       md5: 3de6771a0070cc9551d6b40ad849e2c8
       size: 4163
     - path: dependency_search/calculate_cve_lifespan_per_project.py
-      md5: db7bb278185262f3d8aa2a73a662b924
-      size: 15477
+      md5: 0cd864e5d46cea9f052aea7fa64db7a6
+      size: 16189
     outs:
     - path: data/cve_lifespan_df
-      md5: f549b8e124694b97dcf6b1b1ce05d8aa
-      size: 7748773
+      md5: 50c275285bbecec3bcb9f6819802e5ca
+      size: 7773982
     - path: data/cve_lifespan_language_df
-      md5: 1b043b2562d56b6a11596fd01dcbbb07
-      size: 2049724
+      md5: 3c37c7cd552951b4f8642e9cdc85d093
+      size: 5155773
   merge_cve_info_into_lifespan:
     cmd: python3 dependency_search/merge_cve_info_and_cve_lifespan.py data/unique_cve_info-cvss_cwe_ranking_etc.parquet
       data/cve_lifespan_language_df data/cve_lifespan_df data/cve_lifespan_and_cve_info_df
       data/cve_lifespan_language_and_cve_info_df
     deps:
     - path: data/cve_lifespan_df
-      md5: f549b8e124694b97dcf6b1b1ce05d8aa
-      size: 7748773
+      md5: 50c275285bbecec3bcb9f6819802e5ca
+      size: 7773982
     - path: data/cve_lifespan_language_df
-      md5: 1b043b2562d56b6a11596fd01dcbbb07
-      size: 2049724
+      md5: 3c37c7cd552951b4f8642e9cdc85d093
+      size: 5155773
     - path: data/unique_cve_info-cvss_cwe_ranking_etc.parquet
       md5: 2fd6b6671e1c0b8c8c93049d58b294d4
       size: 917236
@@ -168,11 +171,11 @@ stages:
       size: 1609
     outs:
     - path: data/cve_lifespan_and_cve_info_df
-      md5: 159163e9a3f9936fdc4a7993e2fbaf1c
-      size: 1980380
+      md5: 4fa8302c35e074b57565fedc3facc34f
+      size: 5861656
     - path: data/cve_lifespan_language_and_cve_info_df
-      md5: 231a69f9a759c331502e47d3369f3a7c
-      size: 9207992
+      md5: a09e8255bb7731d1f7f5505f6d6b65da
+      size: 9231203
   evaluate-cve_surv:
     cmd: python3 analysis/cve_surv_analysis.py --eval-path=eval/ --path-prefix=''
       data/cve_survival_input_df
@@ -181,8 +184,8 @@ stages:
       md5: 63dd2aba7d6164c0d01605871a371063
       size: 32766
     - path: data/cve_survival_input_df
-      md5: 62f343325cb3567ab68a9e1ad33fa2bf
-      size: 2429429
+      md5: 280c9e8744499ce7e4e07e33214ba74f
+      size: 9077406
     params:
       params.yaml:
         eval.bootstrap_samples: 50
@@ -192,27 +195,27 @@ stages:
         eval.description: no additional filtering
     outs:
     - path: eval/cve_surv_group_metrics.csv
-      md5: e6902dc7617a6a85c3b673d210238071
-      size: 228
+      md5: b11dc5b88e73cc687eccad9a397bde47
+      size: 229
     - path: eval/cve_surv_metrics.json
-      md5: 7ef2fb8ad42b0bebe65215713860464a
-      size: 461
+      md5: 34f5c23f3b9b3d5c050547e86fd8a0a7
+      size: 462
     - path: eval/cve_surv_params.yaml
       md5: 7e20cc3db638f4d3c134ad9e414edc81
       size: 311
     - path: eval/cve_surv_statistics.csv
-      md5: 14508b50a9a5c1541ae08715e6125b49
-      size: 239
+      md5: 1d912b77743a3b60a5fef69b26ebdd94
+      size: 234
     - path: eval/cve_survival_function.png
-      md5: 755c74c3374c20d47a700ea580f36117
-      size: 33152
+      md5: 3e16827a07bb2985981270248fd48ae4
+      size: 35062
   merge_project_info_into_lifespan_language:
     cmd: python3 projects_stats/merge_with_project_metadata.py data/cve_lifespan_language_and_cve_info_df  data/unique_project_info.parquet
       data/cve_survival_input_most_used_language_df
     deps:
     - path: data/cve_lifespan_language_and_cve_info_df
-      md5: 231a69f9a759c331502e47d3369f3a7c
-      size: 9207992
+      md5: a09e8255bb7731d1f7f5505f6d6b65da
+      size: 9231203
     - path: data/unique_project_info.parquet
       md5: ab9166e42442236878e119a9c8fcfe49
       size: 2664107
@@ -221,15 +224,15 @@ stages:
       size: 5424
     outs:
     - path: data/cve_survival_input_most_used_language_df
-      md5: 106c6234f6bd4992db0a43e34ca6276c
-      size: 14199101
+      md5: b9462d97633b80edc4fb0560062d3fd6
+      size: 14222324
   merge_project_info_into_lifespan:
     cmd: python3 projects_stats/merge_with_project_metadata.py data/cve_lifespan_and_cve_info_df
       data/unique_project_info.parquet data/cve_survival_input_df
     deps:
     - path: data/cve_lifespan_and_cve_info_df
-      md5: 159163e9a3f9936fdc4a7993e2fbaf1c
-      size: 1980380
+      md5: 4fa8302c35e074b57565fedc3facc34f
+      size: 5861656
     - path: data/unique_project_info.parquet
       md5: ab9166e42442236878e119a9c8fcfe49
       size: 2664107
@@ -238,8 +241,8 @@ stages:
       size: 5424
     outs:
     - path: data/cve_survival_input_df
-      md5: 62f343325cb3567ab68a9e1ad33fa2bf
-      size: 2429429
+      md5: 280c9e8744499ce7e4e07e33214ba74f
+      size: 9077406
   dependency_df:
     cmd: python3 dependency_search/prepare_dep_df.py data/cve_df_filename data/dep_df
     deps:
