@@ -177,11 +177,12 @@ def assign_programming_language_classes(df, language_to_class_dict):
     extended_programming_paradigm = language_to_class_dict['extended_programming_paradigm']
     language_columns = language_to_class_dict['language_columns']
 
-    df[language_columns].replace(0, np.nan, inplace=True)
+    df[language_columns] = df[language_columns].replace(0, np.nan)
     cve_lifespans_language_df = df.melt(id_vars=['commit_cves', 'project_names', 'commits', 'used_dep_manager',
                                                  'cve_lifespan_commiter_time', 'cve_lifespan_author_time',
                                                  'embargo_min', 'embargo_max', 'lang_Shell',
-                                                 'other_languages']).dropna()
+                                                 'other_languages'])
+    cve_lifespans_language_df = cve_lifespans_language_df.dropna()
     cve_lifespans_language_df['programming_paradigm'] = cve_lifespans_language_df['variable'] \
         .apply(lambda language: programming_paradigm[language])
     cve_lifespans_language_df['Programming paradigm'] = pd.Categorical(
