@@ -175,8 +175,9 @@ def assign_programming_language_classes(df, language_to_class_dict):
     type_class = language_to_class_dict['type_class']
     memory_model = language_to_class_dict['memory_model']
     extended_programming_paradigm = language_to_class_dict['extended_programming_paradigm']
+    language_columns = language_to_class_dict['language_columns']
 
-    df.replace(0, np.nan, inplace=True)
+    df[language_columns].replace(0, np.nan, inplace=True)
     cve_lifespans_language_df = df.melt(id_vars=['commit_cves', 'project_names', 'commits', 'used_dep_manager',
                                                  'cve_lifespan_commiter_time', 'cve_lifespan_author_time',
                                                  'embargo_min', 'embargo_max', 'lang_Shell',
