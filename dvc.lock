@@ -143,8 +143,8 @@ stages:
       md5: 3de6771a0070cc9551d6b40ad849e2c8
       size: 4163
     - path: dependency_search/calculate_cve_lifespan_per_project.py
-      md5: 0cd864e5d46cea9f052aea7fa64db7a6
-      size: 16189
+      md5: 36fb19b36612474a1a52d6dc2771fb5e
+      size: 16085
     outs:
     - path: data/cve_lifespan_df
       md5: 50c275285bbecec3bcb9f6819802e5ca
