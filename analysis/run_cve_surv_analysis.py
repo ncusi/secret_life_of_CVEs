@@ -72,7 +72,9 @@ def enumerate_risks(exec_path: pathlib.Path, params: dict, input_df_filename: pa
 
     eval_path = params['eval_path'] if 'eval_path' in params else 'eval'
 
-    for risk in tqdm(risk_factors):
+    pbar = tqdm(risk_factors)
+    for risk in pbar:
+        pbar.set_postfix_str(risk.column_name)
         subprocess.run([
             exec_path,
             f"--eval-path={eval_path}/{params['short_name']}",
@@ -80,7 +82,7 @@ def enumerate_risks(exec_path: pathlib.Path, params: dict, input_df_filename: pa
             f"--path-prefix=details/{risk.prefix_dir}/",
             "--append-to-group-metrics",
             input_df_filename
-        ], stderr=subprocess.DEVNULL)
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def main():
