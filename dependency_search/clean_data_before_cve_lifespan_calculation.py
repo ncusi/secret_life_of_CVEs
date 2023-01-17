@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Usage: %(scriptName) <combined_df> <languages_to_class.json> <cleaned_cve_df>
+"""Usage: %(scriptName) <combined_df> <dep_df> <languages_to_class.json> <cleaned_cve_df>
 
 Removes each row (commit and cve) matching following criteria:
 1) Commit is in not supported language
 2) Commit or cve has wrong date (either too far in past or in future)
 3) Commit has multiple projects assigned in c2P map
-Requires result of find_programming_language_for_cve.py and prepare_language_to_class_dict.py
+Requires result of find_programming_language_for_cve.py, prepare_dep_df.py and prepare_language_to_class_dict.py
 """
 import json
 import sys
@@ -17,12 +17,16 @@ import pandas as pd
 
 def main():
     combined_df_filename = sys.argv[1]
-    language_to_class_dict_filename = sys.argv[2]
-    cleaned_data_df_filename = sys.argv[3]
+    dep_df_filename = sys.argv[2]
+    language_to_class_dict_filename = sys.argv[3]
+    cleaned_data_df_filename = sys.argv[4]
     language_to_class = read_language_to_class_dict(language_to_class_dict_filename)
     language_columns = language_to_class['language_columns']
 
     combined_df = pd.read_parquet(combined_df_filename)
+    dep_df = pd.read_parquet(dep_df_filename)
+
+    combined_df = merge_dep_df(combined_df, dep_df)
 
     selected_languages_df = combine_additional_languages(combined_df, language_columns)
     corrected_dates_df = remove_incorrect_dates(selected_languages_df)
@@ -37,6 +41,10 @@ def read_language_to_class_dict(language_to_class_dict_filename):
     return language_to_class
 
 
+def merge_dep_df(combined_df, dep_df):
+    return pd.merge(combined_df, dep_df, on='commit')
+
+
 def combine_additional_languages(df, language_columns):
     selected_language_columns = language_columns + ['lang_Shell']
     all_language_columns = [lang_column for lang_column in df if lang_column.startswith('lang_')]
@@ -45,7 +53,7 @@ def combine_additional_languages(df, language_columns):
     df['other_languages'] = df[other_languages_columns].sum(axis=1)
     columns = ['commit', 'commit_cves', 'commiter_time', 'author_time',
                'project_names', 'total_number_of_files',
-               'published_date', 'error', 'other_languages'
+               'published_date', 'error', 'other_languages', 'used_dep_manager'
                ] + selected_language_columns
     selected_languages_df = df[columns]
     selected_languages_df = selected_languages_df.dropna(subset=columns, how='all')

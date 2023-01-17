@@ -36,11 +36,16 @@ def prepare_cve_lifespans_with_language_classes_df(cleaned_df, language_to_class
 
     language_files_per_cve_df = calculate_language_files_per_cve(cleaned_df, extended_language_columns)
 
+    dep_per_cve_df = calculate_dep_per_cve_df(cleaned_df)
+
     lifespan_df = calculate_lifespan(cleaned_df)
 
     embargo_df = calculate_embargo(cleaned_df)
 
     result_df = pd.merge(left=commits_per_cve_df, right=language_files_per_cve_df,
+                         left_on=['commit_cves', 'project_names'],
+                         right_on=['commit_cves', 'project_names'])
+    result_df = pd.merge(left=result_df, right=dep_per_cve_df,
                          left_on=['commit_cves', 'project_names'],
                          right_on=['commit_cves', 'project_names'])
     result_df = pd.merge(left=result_df, right=lifespan_df,
@@ -50,7 +55,7 @@ def prepare_cve_lifespans_with_language_classes_df(cleaned_df, language_to_class
                          left_on=['commit_cves', 'project_names'],
                          right_on=['commit_cves', 'project_names'])
 
-    selected_columns = ['commits', 'commit_cves', 'project_names',
+    selected_columns = ['commits', 'commit_cves', 'project_names', 'used_dep_manager',
                         'cve_lifespan_commiter_time', 'cve_lifespan_author_time', 'embargo_min',
                         'embargo_max'] + extended_language_columns
 
@@ -71,6 +76,13 @@ def prepare_cve_most_used_language_df(cve_all_used_language_df, language_columns
         projects_cve_lifespan_embargo_most_used_language_df[language_columns].max(axis=1)
     projects_cve_lifespan_embargo_most_used_language_df.drop(columns=language_columns, inplace=True)
     return projects_cve_lifespan_embargo_most_used_language_df
+
+
+def calculate_dep_per_cve_df(df):
+    dep_per_cve_df = df.groupby(['project_names', 'commit_cves'])[['used_dep_manager']].sum()
+    dep_per_cve_df.reset_index(inplace=True)
+    dep_per_cve_df.drop_duplicates(inplace=True)
+    return dep_per_cve_df
 
 
 def calculate_commits_per_cve(df):
@@ -164,11 +176,11 @@ def assign_programming_language_classes(df, language_to_class_dict):
     memory_model = language_to_class_dict['memory_model']
     extended_programming_paradigm = language_to_class_dict['extended_programming_paradigm']
 
-    df.replace(0, np.nan, inplace=True)
-    cve_lifespans_language_df = df.melt(id_vars=['commit_cves', 'project_names', 'commits',
+    cve_lifespans_language_df = df.melt(id_vars=['commit_cves', 'project_names', 'commits', 'used_dep_manager',
                                                  'cve_lifespan_commiter_time', 'cve_lifespan_author_time',
                                                  'embargo_min', 'embargo_max', 'lang_Shell',
-                                                 'other_languages']).dropna()
+                                                 'other_languages'])
+    cve_lifespans_language_df = cve_lifespans_language_df[cve_lifespans_language_df['value'] > 0]
     cve_lifespans_language_df['programming_paradigm'] = cve_lifespans_language_df['variable'] \
         .apply(lambda language: programming_paradigm[language])
     cve_lifespans_language_df['Programming paradigm'] = pd.Categorical(
