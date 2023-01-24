@@ -31,8 +31,9 @@ def main():
     selected_languages_df = combine_additional_languages(combined_df, language_columns)
     corrected_dates_df = remove_incorrect_dates(selected_languages_df)
     corrected_projects_df = handle_more_than_one_project(corrected_dates_df)
-    corrected_projects_df.drop_duplicates(inplace=True)
-    corrected_projects_df.to_parquet(cleaned_data_df_filename)
+    corrected_projects_with_present_files_df = remove_commits_without_files(corrected_projects_df)
+    corrected_projects_with_present_files_df.drop_duplicates(inplace=True)
+    corrected_projects_with_present_files_df.to_parquet(cleaned_data_df_filename)
 
 
 def read_language_to_class_dict(language_to_class_dict_filename):
@@ -70,6 +71,11 @@ def remove_incorrect_dates(df):
     corrected_dates_df = corrected_dates_df[corrected_dates_df['published_date'] < '2023-01-01']
     corrected_dates_df = corrected_dates_df[corrected_dates_df['published_date'] > '1999-01-01']
     return corrected_dates_df
+
+
+def remove_commits_without_files(df):
+    corrected_df = df[df['total_number_of_files']>0]
+    return corrected_df
 
 
 def handle_more_than_one_project(df):

@@ -3,7 +3,7 @@ from unittest import TestCase
 import pandas as pd
 
 from clean_data_before_cve_lifespan_calculation import combine_additional_languages, remove_incorrect_dates, \
-    handle_more_than_one_project
+    handle_more_than_one_project, remove_commits_without_files
 
 
 class Test(TestCase):
@@ -64,3 +64,19 @@ class Test(TestCase):
         self.assertEqual(result_df.shape, (2, 9))
         self.assertEqual(result_df['project_names'][0], 'broftkd_linux-history-repo')
         self.assertEqual(result_df['project_names'][1], 'bloomberg_chromium.bb')
+
+    def test_remove_commits_without_files(self):
+        df = pd.DataFrame(data={
+            'commit': ['d26201', 'd06eddd15'],
+            'commit_cves': ['CVE-2008-5079', 'CVE-2014-3470'],
+            'commiter_time': ['2000-05-23 21:15:00', '2014-06-20 16:17:41'],
+            'author_time': ['2000-05-23 21:15:0', '2014-06-20 15:00:00'],
+            'project_names': ['broftkd_linux-history-repo', 'bloomberg_chromium.bb;grpc_grpc'],
+            'total_number_of_files': [0, 1],
+            'published_date': ['2008-12-09T00:30:00', '2014-06-05T21:55:00'],
+            'error': [None, None],
+            'lang_C': [0, 4]}
+        )
+        result_df = remove_commits_without_files(df)
+        self.assertEqual(result_df.shape, (1, 9))
+        self.assertEqual(result_df['commit'].to_list()[0], 'd06eddd15')
