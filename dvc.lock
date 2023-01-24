@@ -143,12 +143,12 @@ stages:
       md5: 3de6771a0070cc9551d6b40ad849e2c8
       size: 4163
     - path: dependency_search/calculate_cve_lifespan_per_project.py
-      md5: 36fb19b36612474a1a52d6dc2771fb5e
-      size: 16085
+      md5: a5c3e41eeee69c7b6cb5bf54f5bd2845
+      size: 16190
     outs:
     - path: data/cve_lifespan_df
-      md5: 9af91a0a4582c989e0b820a12a290eed
-      size: 7653568
+      md5: 487bede33e432111583544c9109d4333
+      size: 3042007
     - path: data/cve_lifespan_language_df
       md5: 833e440fa4bbc62c4f320067054e0870
       size: 5139223
@@ -158,8 +158,8 @@ stages:
       data/cve_lifespan_language_and_cve_info_df
     deps:
     - path: data/cve_lifespan_df
-      md5: 9af91a0a4582c989e0b820a12a290eed
-      size: 7653568
+      md5: 487bede33e432111583544c9109d4333
+      size: 3042007
     - path: data/cve_lifespan_language_df
       md5: 833e440fa4bbc62c4f320067054e0870
       size: 5139223
@@ -174,8 +174,8 @@ stages:
       md5: 7dfa44782d07e90c4a46bc8cdd64b355
       size: 5860513
     - path: data/cve_lifespan_language_and_cve_info_df
-      md5: 5530b5de7ac452c96d6cb3e041821109
-      size: 9106614
+      md5: 0107e90bacf138012923ee2d3b4be23c
+      size: 3738093
   evaluate-cve_surv:
     cmd: python3 analysis/cve_surv_analysis.py --eval-path=eval/ --path-prefix=''
       data/cve_survival_input_df
@@ -214,8 +214,8 @@ stages:
       data/cve_survival_input_most_used_language_df
     deps:
     - path: data/cve_lifespan_language_and_cve_info_df
-      md5: 5530b5de7ac452c96d6cb3e041821109
-      size: 9106614
+      md5: 0107e90bacf138012923ee2d3b4be23c
+      size: 3738093
     - path: data/unique_project_info.parquet
       md5: ab9166e42442236878e119a9c8fcfe49
       size: 2664107
@@ -224,8 +224,8 @@ stages:
       size: 5424
     outs:
     - path: data/cve_survival_input_most_used_language_df
-      md5: b725449a0415d63cbf82d02b2f48e3ed
-      size: 14104222
+      md5: e826986f18042890257ca93e0874534f
+      size: 5687409
   merge_project_info_into_lifespan:
     cmd: python3 projects_stats/merge_with_project_metadata.py data/cve_lifespan_and_cve_info_df
       data/unique_project_info.parquet data/cve_survival_input_df
