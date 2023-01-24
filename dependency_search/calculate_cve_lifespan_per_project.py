@@ -253,6 +253,8 @@ def assign_programming_language_class(df, language_to_class_dict):
     extended_programming_paradigm = language_to_class_dict['extended_programming_paradigm']
 
     cve_lifespans_df = df.copy().drop_duplicates()
+    cve_lifespans_df = cve_lifespans_df[cve_lifespans_df['most_common_language_number_of_files'] > 0]
+
     cve_lifespans_df['programming_paradigm'] = cve_lifespans_df['most_common_language'] \
         .apply(lambda language: programming_paradigm[language])
     cve_lifespans_df['Programming paradigm'] = pd.Categorical(
