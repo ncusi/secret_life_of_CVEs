@@ -2,13 +2,13 @@
     "Cohort": 287884,
     "Number of patients": 287884.0,
     "% of cohort": 100.0,
-    "Survival days, median": 370.0,
-    "Survival years, median": 1.0136986301369864,
-    "Dxy (full)": -0.18128069701698657,
+    "Survival days, median": 368.0,
+    "Survival years, median": 1.0082191780821919,
+    "Dxy (full)": -0.1817984259733797,
     "bootstrap": {
-        "Dxy": -0.18121873199348848,
-        "Confidence interval low": -0.18144574090028454,
-        "Confidence interval high": -0.18099172308669242,
+        "Dxy": -0.18201578399112214,
+        "Confidence interval low": -0.18231291082416573,
+        "Confidence interval high": -0.18171865715807856,
         "confidence threshold %": 95.0,
         "bootstrap samples": 50
     }

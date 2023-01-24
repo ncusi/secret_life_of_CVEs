@@ -8,3 +8,4 @@ cve_survival_analysis:
 description: no additional filtering
 eval_path: eval
 path_prefix: ''
+short_name: simple
