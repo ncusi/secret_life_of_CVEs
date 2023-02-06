@@ -4,11 +4,16 @@
 """Usage: %(scriptName)s [OPTIONS] <cve_survival_input_df> ...
 
 Based on 'notebooks/surv_ana.ipynb' and 'notebooks/surv_clean_programming_classes.ipynb'
-Jupyter Notebooks
+Jupyter Notebooks.
 
-TODO: use 'dvc' module for reading params: `dvc.api.params_show()`
-TODO: docstrings with typing
-TODO: use mlflow / dvclive / dagshub API for saving metrics
+See also Jupyter notebooks in 'notebooks/risk_factors/' directory.
+
+TODO: update functions based on updated code in Jupyter notebooks
+TODO: docstrings with typing, add and update
+TODO: save plots and metrics into subdirectories (for run_cve_surv_analysis.py)
+TODO: support for binning for categories (see Jupyter notebooks)
+TODO: use 'dvc' module for reading params: `dvc.api.params_show()` - maybe
+TODO: use mlflow / dvclive / dagshub API for saving metrics - as an option
 TODO: plot output as set of values (for dvc)
 TODO: other plots, and other ways of evaluating survival models
 """
