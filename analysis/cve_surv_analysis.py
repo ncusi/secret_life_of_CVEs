@@ -8,7 +8,7 @@ Jupyter Notebooks.
 
 See also Jupyter notebooks in 'notebooks/risk_factors/' directory.
 
-TODO: update functions based on updated code in Jupyter notebooks
+TODO: make use of apply_stats_for_each_value() returning results_summary
 TODO: docstrings with typing, add and update
 TODO: save plots and metrics into subdirectories (for run_cve_surv_analysis.py)
 TODO: support for binning for categories (see Jupyter notebooks)
@@ -94,7 +94,6 @@ def bootstrap_dxy(df, n=5):
 
 def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=None):
     """Apply stats to each value in column"""
-
     all_count = df.shape[0]
 
     if df_mask is not None:
@@ -142,6 +141,11 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
               lambda x: np.percentile(x, q=25), lambda x: np.percentile(x, q=75),
               'max', 'mean', 'std', 'skew'])\
         .rename(columns={'<lambda_0>': '25%', '<lambda_1>': '75%'})
+    # add columns
+    groups['% of cohort'] = 100.0 * groups['count'] / all_count
+    groups['% of selected'] = 100.0 * groups['count'] / selected_count
+    groups['% of patients'] = 100.0 * groups['count'] / stats['count']
+    groups['interquartile range'] = groups['75%'] - groups['25%']
 
     # DEBUG
     #print(dff_groupby_y.describe())
@@ -150,7 +154,17 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
     if condition_names:
         groups.index = groups.index.map(condition_names)
 
-    return ret, groups, dff
+    results_summary = {
+        'cohort': all_count,
+        'count': stats['count'],
+        '% of cohort': ret['% of cohort'],
+        'median': stats['median'],
+        'Dxy': dxy,
+        'Dxy_low': ci_low,
+        'Dxy_high': ci_high,
+    }
+
+    return ret, groups, dff, results_summary
 
 
 def plot_survival_function(params, plot_path, dff, condition_names=None):
@@ -172,16 +186,16 @@ def plot_survival_function(params, plot_path, dff, condition_names=None):
         mask = (dff["agg"] == value)  # it's a boolean-valued pd.Series
         time_cell, survival_prob_cell = kaplan_meier_estimator(dff["E"][mask], dff["Y"][mask])
         plt.step(time_cell, survival_prob_cell, where="post",
-                 label=f"{condition_names[value]} (n = {mask.sum():d})"
+                 label=f"{condition_names[value]} (n = {mask.sum():d}, median = {dff['Y'][mask].median():.0f})"
                        if condition_names else
-                       f"{value:d} (n = {mask.sum():d})"
+                       f"{value:d} (n = {mask.sum():d}, median = {dff['Y'][mask].median():.0f})"
                  )
 
     plt.suptitle(f"Risk factor: '{params['cve_survival_analysis']['risk_column_name']}'")
     if 'description' in params:
         plt.title(params['description'])
     plt.ylabel("est. probability of survival $\\hat{S}(t)$")
-    plt.xlabel("time $t$")
+    plt.xlabel("time $t$ [days]")
     plt.legend(loc="best")
     # plt.show()
     plt.savefig(plot_path)
@@ -624,7 +638,7 @@ def main(params_file, save_params, save_every_param,
         click.echo(f"Computing stats for first {params['cve_survival_analysis']['limit']} elements," +
                    f" for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
                    file=sys.stderr)
-        measures, groups_df, dff = \
+        measures, groups_df, dff, _ = \
             apply_stats_for_each_value(params, df[:params['cve_survival_analysis']['limit']],
                                        f_map, condition_names=condition_names_hash,
                                        df_mask=df_mask)
@@ -632,7 +646,7 @@ def main(params_file, save_params, save_every_param,
         click.echo(f"Computing stats for all {df.shape[0]} elements," +
                    f" for '{params['cve_survival_analysis']['risk_column_name']}' risk factor...",
                    file=sys.stderr)
-        measures, groups_df, dff = \
+        measures, groups_df, dff, _ = \
             apply_stats_for_each_value(params, df,
                                        f_map, condition_names=condition_names_hash,
                                        df_mask=df_mask)
