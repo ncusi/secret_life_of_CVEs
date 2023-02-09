@@ -35,7 +35,22 @@ import click       # command line parsing
 
 
 def mean_confidence_interval(data, confidence=0.95):
-    """Calculate mean, and lower and upper bound of confidence interval"""
+    """Calculate mean, and lower and upper bound of confidence interval
+
+    Parameters
+    ----------
+    data : array_like
+        Data to compute mean, and lower and upper bound of confidence
+        interval from
+    confidence : float
+        Confidence interval, 0 <= confidence <= 1
+
+    Returns
+    -------
+    (float, float, float)
+        Tuple of mean, lower bound, upper bound of given confidence interval;
+        the lower bound and upper bound limits are symmetric around mean.
+    """
     a = 1.0 * np.array(data)
     n = len(a)
     m, se = np.mean(a), scipy.stats.sem(a)
@@ -46,9 +61,34 @@ def mean_confidence_interval(data, confidence=0.95):
 def Dxy(event_observed, cve_lifetime, predicted_scores):
     """Calculate Dxy
 
-    Rescale values from 0<=x<=1 range, where 0 is perfect anti-concordance,
+    Calculates Somers’ D, a measure of ordinal association between two possibly
+    dependent random variables: cve_lifetime and predicted_scores, that is
+    between a series of event times and a predicted score.  It also knows
+    how to handle censored values (denoted via event_observed).
+
+    Calling convention the same as for `sksurv.metrics.concordance_index_censored()`.
+    Uses `lifelines.utils.concordance_index()` instead for better performance.
+
+    Computed from the concordance index (C-index), with the values
+    rescaled from 0<=x<=1 range, where 0 is perfect anti-concordance,
     and 0.5 is the expected result from random predictions,
-    to the -1<=x<=1 range
+    to the -1<=x<=1 range.
+
+    Parameters
+    ----------
+    event_observed : iterable
+        a length-n iterable censoring flags, 1 if observed, 0 if not
+    cve_lifetime : iterable
+        a length-n iterable of observed survival times
+    predicted_scores : iterable
+        a length-n iterable of predicted scores - these could be survival times,
+        or hazards, etc.
+
+    Returns
+    -------
+    float
+        Values between −1 when all pairs of the variables disagree
+        and 1 when all pairs of the variables agree.
     """
     #return 2 * concordance_index_censored(event_observed, cve_lifetime, predicted_scores)[0] - 1
     return 2 * concordance_index(cve_lifetime, predicted_scores, event_observed) - 1
@@ -85,7 +125,29 @@ def bootstrap_dxy_inner(df):
 
 
 def bootstrap_dxy(df, n=5):
-    """Boostrap and calculate Dxy, resampling `n` times"""
+    """Boostrap and calculate Dxy, resampling `n` times
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Dataframe to sample to compute Dxy from concordance index.
+        Assumes that first 3 columns in this dataframe are:
+
+        1. boolean column denoting which events were observed (un-censored)
+        2. column with event times, in this case CVE lifetime (time to fix)
+        3. column with predicted score, assumed to be category number,
+           ordered in such way that larger values predict shorter lifetime
+
+        Other columns are not used.
+    n : int, optional
+        Number of samples used for bootstrap [default: 5]
+
+    Returns
+    -------
+    Sequence[float]
+        List of coefficient of concordance correlation (see `Dxy`) for each
+        bootstrap sample.
+    """
     # resample n times
     result = Parallel(n_jobs=-1)(delayed(bootstrap_dxy_inner)(df) for _ in range(n))
 
@@ -93,7 +155,29 @@ def bootstrap_dxy(df, n=5):
 
 
 def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=None):
-    """Apply stats to each value in column"""
+    """Apply stats to each value in column
+
+    Parameters
+    ----------
+    params : dict
+        Holds various parameters that control the behavior of this function.
+    df : pandas.DataFrame
+        Holds data to analyze.  This function assumes that this dataframe has
+        the following columns:
+          df.Y : holding event lifetime
+          df.E : holding event mask
+        The risk factor is computed over the rows of this dataframe via `fmap`
+        function (with `df.apply(fmap, axis=1)`).
+    fmap : function
+        Maps rows with risk column values to ordinal risk score.
+        Function to apply to each row of `df` dataframe.
+    condition_names : dict, optional
+        Mapping from risk score to category name, "reversing" `fmap`.
+        Changes the index of `groups` part of function result.
+    df_mask : bool pandas.Series/pandas.DataFrame, optional
+        Filter to apply to `df` before doing any calculations:
+        `df = df[df_mask]`.
+    """
     all_count = df.shape[0]
 
     if df_mask is not None:
