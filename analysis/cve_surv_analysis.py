@@ -157,6 +157,10 @@ def bootstrap_dxy(df, n=5):
 def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=None):
     """Apply stats to each value in column
 
+    Find median lifetime for each ordinal category of the risk factor selected
+    through `fmap`, and Sommers' D correlation index for risk column as
+    a whole.
+
     Parameters
     ----------
     params : dict
@@ -164,8 +168,8 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
     df : pandas.DataFrame
         Holds data to analyze.  This function assumes that this dataframe has
         the following columns:
-          df.Y : holding event lifetime
-          df.E : holding event mask
+          - df.Y : holding event lifetime
+          - df.E : holding event mask
         The risk factor is computed over the rows of this dataframe via `fmap`
         function (with `df.apply(fmap, axis=1)`).
     fmap : function
@@ -177,6 +181,29 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
     df_mask : bool pandas.Series/pandas.DataFrame, optional
         Filter to apply to `df` before doing any calculations:
         `df = df[df_mask]`.
+
+    Returns
+    -------
+    (dict, pandas.DataFrame, pandas.DataFrame, dict)
+        First element of returned tuple is the `results` nested dict, containing
+        information about the risk factor / risk column as a whole, including
+        Dxy (Sommers' D measure, a correlation coefficient, see `Dxy`) and
+        its confidence interval (CI) found through bootstrapping.
+
+        Second element of returned tuple is the `groups` DataFrame, containing
+        information about each category in the risk columns, including median,
+        percent of cohort, etc.
+
+        Third element of returned tuple is the `dff` DataFrame containing
+        relevant parts used to compute everything else, namely:
+          - 'E' column with event mask
+          - 'Y' column with event lifetime
+          - 'agg' column with categories mapped to ordinal numbers
+            possibly with concatenated or skipped categories
+
+        Fourth element of returned tuple is the `results_summary` flat dict,
+        containing the information about risk column as a whole, to be
+        used when comparing different risk factors.
     """
     all_count = df.shape[0]
 
@@ -252,19 +279,19 @@ def apply_stats_for_each_value(params, df, fmap, condition_names=None, df_mask=N
 
 
 def plot_survival_function(params, plot_path, dff, condition_names=None):
-    """Create plot of survival function and save it as PNG image
+    """Create plot of survival function and save it as an image
 
     Parameters
     ----------
     params : dict
         Uses params['cve_survival_analysis']['risk_column_name'] and
-        params['description'] to create plot titles
+        params['description'] to create plot titles.
     plot_path : str | pathlib.Path
-        Where to save the plot
+        Where to save the plot.  Determines image type via extension (PNG, PDF, SVG,...).
     dff : pandas.DataFrame
-        The dataframe with data to compute survival function from
+        The dataframe with data to compute survival function from.
     condition_names : dict | None
-        Mapping from risk factor score to risk factor name
+        Mapping from risk factor score to risk factor name.
     """
     for value in dff["agg"].unique():
         mask = (dff["agg"] == value)  # it's a boolean-valued pd.Series
@@ -287,6 +314,24 @@ def plot_survival_function(params, plot_path, dff, condition_names=None):
 
 
 def create_values_ranking_list(column_s, column_dtype):
+    """Create ordered ranking list of values for a given column, if possible
+
+    Parameters
+    ----------
+    column_s : pandas.Series
+        Column of DataFrame, as Series (e.g. df['cvss'])
+    column_dtype : numpy.dtype
+        Data type of given column
+
+    Returns
+    -------
+    list | None
+        Ordered unique values, based on categories (if categorical type
+        is ordered), or random order of values if there are only two values.
+        Currently, it supports only categorical and string typed columns.
+
+        Returns None if it can't create ordered list of values.
+    """
     # if column_dtype is ordered category, we can use the order;
     # or column_dtype is unordered category with two values, any order is good;
     # or column_dtype is some kind of integer, we can use values
@@ -309,6 +354,24 @@ def create_values_ranking_list(column_s, column_dtype):
 
 
 def values_ranking_hashes(values_ranking_list):
+    """Map list of values to { value: idx } and { idx: value } hashes
+
+    Parameters
+    ----------
+    values_ranking_list : list
+        Ordered list of values
+
+    Returns
+    -------
+    (dict, dict)
+        Mapping from value to index, and from index to value.
+
+    Examples
+    --------
+    >>> values_ranking_hashes(['a', 'b', 'c'])
+    ({'a': 0, 'b': 1, 'c': 2},
+     {0: 'a', 1: 'b', 2: 'c'})
+    """
     values_ranking_hash = { value: idx
                             for (idx, value) in enumerate(values_ranking_list) }
     rankings_condition_names = { idx: value
