@@ -381,6 +381,30 @@ def values_ranking_hashes(values_ranking_list):
 
 
 def f_map_int(row, column_name, min_value=None, max_value=None):
+    """Extract risk score from integer valued column
+
+    To be used to compose the `fmap` parameter of `apply_stat_for_each_value()`
+    function via a partial evaluation of all but first parameter, for example:
+    >>> fmap = lambda x: f_map_int(x, 'integer-valued-column')
+
+    Parameters
+    ----------
+    row : pandas.Series
+        DataFrame row passed, via `pandas.DataFrame.apply()`
+    column_name : str
+        Which column to extract, assumed to be integer valued
+    min_value : int, optional
+        Values smaller than min_value would be converted to None,
+        (skipped) if min_value is set.
+    max_value :  int, optional
+        Values larger than max_value would be converted to None,
+        (skipped) if max_value is set.
+
+    Returns
+    -------
+    int
+        Value to be used as risk score.
+    """
     value = int(row[column_name])
     if min_value is not None and value < min_value:
         return None
@@ -391,11 +415,53 @@ def f_map_int(row, column_name, min_value=None, max_value=None):
 
 
 def f_map_bool(row, column_name):
+    """Extract risk score from boolean valued column
+
+    To be used to compose the `fmap` parameter of `apply_stat_for_each_value()`
+    function via a partial evaluation of all but first parameter, for example:
+    >>> fmap = lambda x: f_map_int(x, 'boolean-valued-column')
+
+    Parameters
+    ----------
+    row : pandas.Series
+        DataFrame row passed, via `pandas.DataFrame.apply()`
+    column_name : str
+        Which column to extract, assumed to be boolean valued.
+        There can be only two non-N/A values, `true` and `false`,
+        so any ordering is good (it would result in correlation
+        or anti-correlation).
+
+    Returns
+    -------
+    bool
+        Value to be used as risk score.
+    """
     value = bool(row[column_name])
     return value
 
 
 def f_map_generic(row, column_name, values_ranking_hash):
+    """Extract categorical-like column
+
+    To be used to compose the `fmap` parameter of `apply_stat_for_each_value()`
+    function via a partial evaluation of all but first parameter, for example:
+    >>> fmap = lambda x: f_map_int(x, 'categorical-like-column', {'value1': 0, 'value2': 1, 'n/a': None})
+
+    Parameters
+    ----------
+    row : pandas.Series
+        DataFrame row passed, via `pandas.DataFrame.apply()`
+    column_name : str
+        Which column to extract, assumed to have limited number of unique
+        values, like for example a categorical column.
+    values_ranking_hash : dict
+        Maps values to their risk score.
+
+    Returns
+    -------
+    int
+        Value to be used as risk score.
+    """
     value = row[column_name]
     if value in values_ranking_hash:
         return values_ranking_hash[value]
