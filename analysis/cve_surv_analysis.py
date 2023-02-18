@@ -419,7 +419,7 @@ def f_map_bool(row, column_name):
 
     To be used to compose the `fmap` parameter of `apply_stat_for_each_value()`
     function via a partial evaluation of all but first parameter, for example:
-    >>> fmap = lambda x: f_map_int(x, 'boolean-valued-column')
+    >>> fmap = lambda x: f_map_bool(x, 'boolean-valued-column')
 
     Parameters
     ----------
@@ -445,7 +445,8 @@ def f_map_generic(row, column_name, values_ranking_hash):
 
     To be used to compose the `fmap` parameter of `apply_stat_for_each_value()`
     function via a partial evaluation of all but first parameter, for example:
-    >>> fmap = lambda x: f_map_int(x, 'categorical-like-column', {'value1': 0, 'value2': 1, 'n/a': None})
+    >>> fmap = lambda x: f_map_generic(x, 'categorical-like-column',
+    >>>                                {'value1': 0, 'value2': 1, 'n/a': None})
 
     Parameters
     ----------
@@ -470,6 +471,23 @@ def f_map_generic(row, column_name, values_ranking_hash):
 
 
 def uniquify(param):
+    """Return unique values in the sequence
+
+    Parameters
+    ----------
+    param : Sequence
+        List of values to iterate over
+
+    Returns
+    -------
+    list
+        Unique values in `params`, in order of occurrence
+
+    Examples
+    --------
+    >>> uniquify([1, 3, 2, 1, 2, 2, 4])
+    [1, 3, 2, 4]
+    """
     seen = set()
     uniq = []
     for elem in param:
