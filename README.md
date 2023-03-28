@@ -12,4 +12,4 @@ available in the 'notebooks/' subdirectory.
 
 The final dataset, along with the source code and notebooks
 used to extract and analyze the data, are accessible on Figshare:
-<https://doi.org/10.6084/m9.figshare>.
+<https://doi.org/10.6084/m9.figshare.22007003>.
