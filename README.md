@@ -40,7 +40,7 @@ downloading them from Figshare, or from DagsHub, use Jupyter notebooks
 from the "`notebooks/`" directory.
 
 
-## World of Code data extraction
+### World of Code data extraction
 
 The code starts with data already extracted from World of Code.
 To recreate data extraction from WoC servers:
@@ -48,3 +48,19 @@ To recreate data extraction from WoC servers:
 - Run "cat search.CVE_in_commit_message_ignore_case.lstCmt_9.out | cut -d';' -f1 | ~/lookup/getValues c2P 1 >projects_with_CVE_fix.txt" on WoC servers
 - Run "cve_search_parser.py search.CVE_in_commit_message.lstCmt_9.out projects_with_CVE_fix.txt cve_df_filename" on WoC servers
 - Copy the result 'cve_df_filename' to local machine, and replace 'cve_df_filename' in 'data/' folder.
+
+### CVE data extraction
+
+Retrieving CVE information (with the help of 'cve_information/retrieve_cve_info.py'
+script) requires an instance of [CVE-Search](https://www.cve-search.org/) running,
+as the script makes use of its REST API.  Currently the instance URI is hardcoded,
+and you need to change it to be able to use your local instance, or some public
+instance. You would need to change the following line in `gather_cve_published_data()`
+function:
+
+```.py
+    url = 'http://158.75.112.151:5000/api/cve/'
+    request_url = url + cve
+```
+
+The data file is avaailable on Figshare, and via DagsHub.
