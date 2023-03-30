@@ -29,14 +29,14 @@ use "`dvc repro`" in main directory, which will run all scripts according to
 what is in the "_dvc.yaml_" file, replacing data folder content when needed.
 
 The data is also available on DagsHub, in the connected repository:
-<https://dagshub.com/ncusi/secret_life_of_CVEs>, where you can get data
+<https://dagshub.com/ncusi/secret_life_of_CVEs>, from which you can get data
 from with "`dvc pull`" (after configuring DagsHub as dvc remote).
 
 
 ## Replicating paper results
 
-To replicate the results in the paper, after recreating data files,
-downloading them from Figshare, or from DagsBub, use Jupyter notebooks
+To replicate the results in the paper, after recreating data files, or
+downloading them from Figshare, or from DagsHub, use Jupyter notebooks
 from the "`notebooks/`" directory.
 
 
