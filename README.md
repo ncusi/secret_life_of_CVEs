@@ -15,6 +15,31 @@ The final dataset, along with the source code and notebooks
 used to extract and analyze the data, are accessible on Figshare:
 <https://doi.org/10.6084/m9.figshare.22007003>.
 
+## How to cite
+* Paper https://doi.org/10.1109/MSR59073.2023.00056
+```
+@INPROCEEDINGS{10174215,
+  author={Przymus, Piotr and Fejzer, Mikołaj and Narębski, Jakub and Stencel, Krzysztof},
+  booktitle={2023 IEEE/ACM 20th International Conference on Mining Software Repositories (MSR)}, 
+  title={The Secret Life of CVEs}, 
+  year={2023},
+  volume={},
+  number={},
+  pages={362-366},
+  doi={10.1109/MSR59073.2023.00056}
+}
+```
+* Dataset https://doi.org/10.6084/m9.figshare.22007003
+```
+@article{Przymus2023,
+  author = "Piotr Przymus and Mikołaj Fejzer and Jakub Narębski and Krzysztof Stencel",
+  title = "{The Secret Life of CVEs - code and dataset}",
+  year = "2023",
+  month = "3",
+  url = "https://figshare.com/articles/dataset/The_Secret_Life_of_CVEs_-_code_and_dataset/22007003",
+  doi = "10.6084/m9.figshare.22007003.v1"
+}
+```
 
 ## Running the code
 
@@ -64,4 +89,4 @@ function:
     request_url = url + cve
 ```
 
-The data file is avaailable on Figshare, and via DagsHub.
+The data file is available on Figshare, and via DagsHub.
