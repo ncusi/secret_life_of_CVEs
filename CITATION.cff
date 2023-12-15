@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: secret_life_of_CVEs
+title: "secret_life_of_CVEs"
 message: >-
   Please cite this software using the metadata from
   'preferred-citation'.
@@ -72,5 +72,5 @@ preferred-citation:
     name: "2023 IEEE/ACM 20th International Conference on Mining Software Repositories (MSR)"
     date-start: "2023-05-15"
     date-end: "2023-05-16"
-    city: Melbourne
-    country: AU
+    city: "Melbourne"
+    country: "AU"
