@@ -60,7 +60,6 @@ preferred-citation:
   doi: "10.1109/MSR59073.2023.00056"
   start: 362 # First page number
   end: 366 # Last page number
-  year: 2023
   abstract: >-
     The Common Vulnerabilities and Exposures (CVEs) system is a reference method for documenting
     publicly known information security weaknesses and exposures. This paper presents a study
