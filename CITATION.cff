@@ -57,7 +57,6 @@ preferred-citation:
         University of Warsaw, Warsaw, Poland
       orcid: 'https://orcid.org/0000-0001-6356-4872'
   title: "The Secret Life of CVEs"
-  journal: "2023 IEEE/ACM 20th International Conference on Mining Software Repositories (MSR)"
   doi: "10.1109/MSR59073.2023.00056"
   start: 362 # First page number
   end: 366 # Last page number
